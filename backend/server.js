@@ -17,6 +17,13 @@ app.use(morgan('dev')); // Logger
 
 // Routes
 app.use('/api/auth', require('./routes/authRoutes'));
+app.use('/api/upload', require('./routes/uploadRoutes'));
+app.use('/api/gallery', require('./routes/galleryRoutes'));
+app.use('/api/tenders', require('./routes/tenderRoutes'));
+app.use('/api/documents', require('./routes/documentRoutes'));
+app.use('/api/facilities', require('./routes/facilityRoutes'));
+app.use('/api/academic-events', require('./routes/academicEventRoutes'));
+app.use('/api/staff', require('./routes/staffRoutes'));
 // app.use('/api/content', require('./routes/contentRoutes'));
 
 app.get('/', (req, res) => {

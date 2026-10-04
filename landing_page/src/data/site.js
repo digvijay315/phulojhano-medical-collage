@@ -1,3 +1,10 @@
+import hero1 from '../assets/hospital1.webp';
+import hero2 from '../assets/hospital2.webp';
+import hero3 from '../assets/hospital3.webp';
+import hero4 from '../assets/hospital4.webp';
+import hero5 from '../assets/hospital5.webp';
+import drGajendraImg from '../assets/Dr. Gajendra Kumar Singh.webp';
+
 export const college = {
   name: "Phulo Jhano Medical College & Hospital, Dumka",
   shortName: "PJMCH Dumka",
@@ -74,13 +81,7 @@ export const nav = [
   { label: "Contact Us", to: "/contact" },
 ];
 
-export const heroSlides = [
-  "https://dumkamedicalcollege.org/wp-content/uploads/2026/08/IMG_3621.JPG.jpeg",
-  "https://dumkamedicalcollege.org/wp-content/uploads/2026/07/DJI_0963.JPG-e1785498394599.jpeg",
-  "https://dumkamedicalcollege.org/wp-content/uploads/2026/08/IMG_3611.JPG.jpeg",
-  "https://dumkamedicalcollege.org/wp-content/uploads/2026/08/IMG_3584.JPG.jpeg",
-  "https://dumkamedicalcollege.org/wp-content/uploads/2026/08/IMG_3586-1.JPG.jpeg",
-];
+export const heroSlides = [hero1, hero2, hero3, hero4, hero5];
 
 const base = "https://dumkamedicalcollege.org";
 
@@ -133,7 +134,7 @@ export const leadership = [
     org: "Phulo Jhano Medical College, Dumka",
     address: "Dumka Medical College, Dumka, PIN – 814110, Jharkhand",
     email: "principal.medicalcollege.dumka@gmail.com",
-    photo: base + "/wp-content/uploads/2026/03/IMG-20260316-WA0008.jpg",
+    photo: drGajendraImg,
   },
   {
     id: "superintendent",

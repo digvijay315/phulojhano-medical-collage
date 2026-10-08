@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import MarqueeComponent from "react-fast-marquee";
 const Marquee = MarqueeComponent.default || MarqueeComponent;
-import { nav, college } from "../data/site";
+import { nav, college as defaultCollege } from "../data/site";
+import axios from "axios";
 
 function NavLink({ item, onNavigate }) {
   const cls =
@@ -64,17 +65,36 @@ function MobileNavItem({ item, onNavigate }) {
 
 export default function Header() {
   const [open, setOpen] = useState(false);
+  const [content, setContent] = useState({
+    phone: defaultCollege.phone,
+    email: defaultCollege.email,
+    noticeTicker: defaultCollege.noticeTicker
+  });
+
+  useEffect(() => {
+    const fetchContent = async () => {
+      try {
+        const res = await axios.get("http://localhost:5000/api/content");
+        if (res.data.success && res.data.item) {
+          setContent(res.data.item);
+        }
+      } catch (err) {
+        console.error("Failed to fetch header content", err);
+      }
+    };
+    fetchContent();
+  }, []);
 
   return (
     <header className="sticky top-0 z-50">
       <div className="hidden bg-secondary text-secondary-foreground md:block">
         <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-2 px-4 py-2 text-xs">
           <div className="flex flex-wrap items-center gap-4">
-            <a className="hover:underline" href={college.phoneHref}>
-              ☎ {college.phone}
+            <a className="hover:underline" href={`tel:${content.phone.replace(/[^0-9]/g, '')}`}>
+              ☎ {content.phone}
             </a>
-            <a className="hover:underline" href={`mailto:${college.email}`}>
-              ✉ {college.email}
+            <a className="hover:underline" href={`mailto:${content.email}`}>
+              ✉ {content.email}
             </a>
           </div>
           <p className="truncate">Government of Jharkhand · NMC recognised</p>
@@ -145,14 +165,16 @@ export default function Header() {
         </AnimatePresence>
       </div>
 
-      <div className="bg-accent text-accent-foreground">
-        <div className="mx-auto max-w-7xl overflow-hidden py-1.5 text-xs font-medium">
-          <Marquee speed={40} gradient={false}>
-            <span className="mx-4">Notice: {college.noticeTicker}</span>
-            <span className="mx-4">Notice: {college.noticeTicker}</span>
-          </Marquee>
+      {content.noticeTicker && (
+        <div className="bg-accent text-accent-foreground">
+          <div className="mx-auto max-w-7xl overflow-hidden py-1.5 text-xs font-medium">
+            <Marquee speed={40} gradient={false}>
+              <span className="mx-4">Notice: {content.noticeTicker}</span>
+              <span className="mx-4">Notice: {content.noticeTicker}</span>
+            </Marquee>
+          </div>
         </div>
-      </div>
+      )}
     </header>
   );
 }

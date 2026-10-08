@@ -1,24 +1,41 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link } from "react-router-dom";
+import axios from "axios";
 
 export default function WelcomePopup() {
   const [isVisible, setIsVisible] = useState(false);
+  const [content, setContent] = useState(null);
 
   useEffect(() => {
-    // Show popup after 2 seconds
-    const timer = setTimeout(() => {
-      // Check if already shown in this session to prevent annoyance
-      const hasSeen = sessionStorage.getItem("hasSeenWelcomePopup");
-      if (!hasSeen) {
-        setIsVisible(true);
-        sessionStorage.setItem("hasSeenWelcomePopup", "true");
+    const fetchContent = async () => {
+      try {
+        const res = await axios.get("http://localhost:5000/api/content");
+        if (res.data.success && res.data.item) {
+          setContent(res.data.item);
+          
+          if (res.data.item.popupEnabled) {
+            const hasSeen = sessionStorage.getItem("hasSeenWelcomePopup");
+            if (!hasSeen) {
+              const timer = setTimeout(() => {
+                setIsVisible(true);
+                sessionStorage.setItem("hasSeenWelcomePopup", "true");
+              }, 2000);
+              return () => clearTimeout(timer);
+            }
+          }
+        }
+      } catch (err) {
+        console.error("Failed to fetch popup content", err);
       }
-    }, 2000);
-    return () => clearTimeout(timer);
+    };
+    
+    fetchContent();
   }, []);
 
-  if (!isVisible) return null;
+  if (!isVisible || !content) return null;
+
+  const isExternalLink = content.popupLinkUrl?.startsWith('http');
 
   return (
     <AnimatePresence>
@@ -55,7 +72,7 @@ export default function WelcomePopup() {
               PJ
             </span>
             <h2 className="font-serif text-2xl font-semibold sm:text-3xl">
-              Admission Notice 2026
+              {content.popupTitle || 'Notice'}
             </h2>
             <p className="mt-2 text-primary-foreground/80">
               Phulo Jhano Medical College & Hospital, Dumka
@@ -64,16 +81,30 @@ export default function WelcomePopup() {
           
           <div className="p-6 text-center sm:px-10 sm:py-8">
             <p className="text-sm text-muted-foreground sm:text-base">
-              The admission process for the MBBS Batch of 2026-27 is now live. Please review the mandatory disclosures and student guidelines before applying.
+              {content.popupDescription || 'Welcome to our college.'}
             </p>
             <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-center">
-              <Link
-                to="/academics"
-                onClick={() => setIsVisible(false)}
-                className="rounded-lg bg-accent px-6 py-2.5 text-sm font-semibold text-accent-foreground transition-transform hover:-translate-y-0.5"
-              >
-                View Guidelines
-              </Link>
+              {content.popupLinkUrl && (
+                isExternalLink ? (
+                  <a
+                    href={content.popupLinkUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    onClick={() => setIsVisible(false)}
+                    className="rounded-lg bg-accent px-6 py-2.5 text-sm font-semibold text-accent-foreground transition-transform hover:-translate-y-0.5"
+                  >
+                    {content.popupLinkText || 'View Details'}
+                  </a>
+                ) : (
+                  <Link
+                    to={content.popupLinkUrl}
+                    onClick={() => setIsVisible(false)}
+                    className="rounded-lg bg-accent px-6 py-2.5 text-sm font-semibold text-accent-foreground transition-transform hover:-translate-y-0.5"
+                  >
+                    {content.popupLinkText || 'View Details'}
+                  </Link>
+                )
+              )}
               <button
                 onClick={() => setIsVisible(false)}
                 className="rounded-lg border border-border px-6 py-2.5 text-sm font-semibold text-foreground transition-colors hover:bg-muted"

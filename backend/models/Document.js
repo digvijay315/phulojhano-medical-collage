@@ -5,7 +5,7 @@ const documentSchema = new mongoose.Schema({
   pdfUrl: { type: String, required: true },
   category: { 
     type: String, 
-    enum: ['student_list', 'syllabus', 'result', 'academic_calendar'], 
+    enum: ['student_list', 'syllabus', 'result', 'academic_calendar', 'stipend'], 
     required: true 
   },
   createdAt: { type: Date, default: Date.now }

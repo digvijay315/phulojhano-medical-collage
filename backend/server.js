@@ -24,7 +24,9 @@ app.use('/api/documents', require('./routes/documentRoutes'));
 app.use('/api/facilities', require('./routes/facilityRoutes'));
 app.use('/api/academic-events', require('./routes/academicEventRoutes'));
 app.use('/api/staff', require('./routes/staffRoutes'));
-// app.use('/api/content', require('./routes/contentRoutes'));
+app.use('/api/chatbot', require('./routes/chatbotRoutes'));
+app.use('/api/notices', require('./routes/noticeRoutes'));
+app.use('/api/content', require('./routes/contentRoutes'));
 
 app.get('/', (req, res) => {
   res.send('Phulo Jhano Medical College API is running...');

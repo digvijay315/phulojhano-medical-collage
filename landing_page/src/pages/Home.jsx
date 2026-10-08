@@ -92,8 +92,24 @@ function Hero() {
 }
 
 export default function Home() {
-  const latestTenders = tenders.slice(0, 4);
-  const latestStipends = stipends.slice(0, 3);
+  const [latestNotices, setLatestNotices] = useState([]);
+
+  useEffect(() => {
+    const fetchNotices = async () => {
+      try {
+        const response = await fetch("http://localhost:5000/api/notices");
+        const data = await response.json();
+        if (data.success && data.items) {
+          // Sort by date descending and take top 5
+          const sorted = data.items.sort((a, b) => new Date(b.date) - new Date(a.date));
+          setLatestNotices(sorted.slice(0, 5));
+        }
+      } catch (err) {
+        console.error("Failed to fetch notices", err);
+      }
+    };
+    fetchNotices();
+  }, []);
 
   return (
     <>
@@ -174,28 +190,37 @@ export default function Home() {
             className="rounded-2xl border border-border bg-secondary p-6"
           >
             <h2 className="font-serif text-xl font-semibold">Latest Notices</h2>
-            <ul className="mt-4 space-y-3">
-              {latestTenders.map((t) => (
-                <li key={t.subject} className="border-b border-border pb-3">
-                  <p className="text-sm font-medium">{t.subject}</p>
-                  <p className="text-xs text-muted-foreground">
-                    {t.start} – {t.end}
-                  </p>
-                </li>
-              ))}
-              {latestStipends.map((s) => (
-                <motion.li key={s.href} className="border-b border-border pb-3">
-                  <p className="text-sm font-medium">{s.title}</p>
-                  <p className="text-xs text-muted-foreground">Stipend notice</p>
-                </motion.li>
-              ))}
-            </ul>
+            
+            {latestNotices.length > 0 ? (
+              <ul className="mt-4 space-y-3">
+                {latestNotices.map((notice) => (
+                  <li key={notice._id} className="border-b border-border pb-3">
+                    <p className="text-sm font-medium">
+                      {notice.pdfUrl ? (
+                        <a href={notice.pdfUrl} target="_blank" rel="noreferrer" className="hover:text-accent transition-colors">
+                          {notice.title}
+                        </a>
+                      ) : (
+                        <span>{notice.title}</span>
+                      )}
+                    </p>
+                    <p className="text-xs text-muted-foreground flex justify-between mt-1">
+                      <span>{notice.category}</span>
+                      <span>{new Date(notice.date).toLocaleDateString()}</span>
+                    </p>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="mt-4 text-sm text-muted-foreground">No recent notices.</p>
+            )}
+            
             <div className="mt-5 flex gap-3 text-sm font-semibold">
               <Link to="/tender" className="text-accent-foreground underline">
-                All tenders
+                Tenders
               </Link>
               <Link to="/stipends" className="text-accent-foreground underline">
-                All stipends
+                Stipends
               </Link>
             </div>
           </motion.aside>

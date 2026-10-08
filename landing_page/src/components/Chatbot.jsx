@@ -1,42 +1,30 @@
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-
-const faqs = [
-  {
-    id: "q1",
-    question: "How to apply for MBBS?",
-    answer: "Admissions to the MBBS programme are strictly based on the NEET-UG examination results and the subsequent state/central counseling process.",
-  },
-  {
-    id: "q2",
-    question: "What is the fee structure?",
-    answer: "The fee structure is determined by the Government of Jharkhand. For detailed fee breakdown, please visit the Academics section.",
-  },
-  {
-    id: "q3",
-    question: "Where is the college located?",
-    answer: "Phulo Jhano Medical College & Hospital is located in Dumka, Jharkhand.",
-  },
-  {
-    id: "q4",
-    question: "Are hostel facilities available?",
-    answer: "Yes, we provide separate, well-equipped hostel facilities for both boys and girls within the campus.",
-  },
-  {
-    id: "q5",
-    question: "How can I contact the hospital?",
-    answer: "You can reach the hospital emergency 24x7 at our official contact number listed in the header.",
-  }
-];
+import axios from "axios";
 
 export default function Chatbot() {
   const [isOpen, setIsOpen] = useState(false);
+  const [faqs, setFaqs] = useState([]);
   const [messages, setMessages] = useState([
     { id: 1, text: "Welcome to Phulo Jhano Medical College! Please select a question below or type your query.", isBot: true },
   ]);
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef(null);
+
+  useEffect(() => {
+    const fetchFaqs = async () => {
+      try {
+        const res = await axios.get("http://localhost:5000/api/chatbot");
+        if (res.data.success && res.data.items) {
+          setFaqs(res.data.items);
+        }
+      } catch (err) {
+        console.error("Failed to fetch FAQs", err);
+      }
+    };
+    fetchFaqs();
+  }, []);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -61,7 +49,13 @@ export default function Chatbot() {
       
       let botResponseText = answer;
       if (!isFaq) {
-        botResponseText = "Thanks for your message. Currently, I can only answer predefined questions. Please contact the administration for specific queries.";
+        // Simple search algorithm: check if user input matches any FAQ question partially
+        const foundMatch = faqs.find(faq => faq.question.toLowerCase().includes(text.toLowerCase()));
+        if (foundMatch) {
+          botResponseText = foundMatch.answer;
+        } else {
+          botResponseText = "Thanks for your message. Currently, I can only answer predefined questions. Please contact the administration for specific queries.";
+        }
       }
 
       const botMsg = {
@@ -141,7 +135,7 @@ export default function Chatbot() {
               )}
 
               {/* FAQ Suggestions */}
-              {!isTyping && messages[messages.length - 1].isBot && (
+              {!isTyping && messages[messages.length - 1].isBot && faqs.length > 0 && (
                 <motion.div 
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
@@ -150,7 +144,7 @@ export default function Chatbot() {
                 >
                   {faqs.map((faq) => (
                     <button
-                      key={faq.id}
+                      key={faq._id}
                       onClick={() => handleSend(faq.question, true, faq.answer)}
                       className="rounded-full border border-primary/20 bg-primary/5 px-3 py-1.5 text-xs font-medium text-primary transition-colors hover:bg-primary/10 hover:border-primary/30 text-left"
                     >

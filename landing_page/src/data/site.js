@@ -136,15 +136,15 @@ export const leadership = [
     email: "principal.medicalcollege.dumka@gmail.com",
     photo: drGajendraImg,
   },
-  {
-    id: "superintendent",
-    name: "Dr. Ruben Hembrom",
-    role: "Superintendent",
-    org: "Phulo Jhano Medical College, Dumka",
-    address: "Dumka Medical College, Dumka, Jharkhand",
-    email: "superintendentdmch@gmail.com",
-    photo: base + "/wp-content/uploads/2026/03/SUP_160326.jpeg",
-  },
+  // {
+  //   id: "superintendent",
+  //   name: "Dr. Ruben Hembrom",
+  //   role: "Superintendent",
+  //   org: "Phulo Jhano Medical College, Dumka",
+  //   address: "Dumka Medical College, Dumka, Jharkhand",
+  //   email: "superintendentdmch@gmail.com",
+  //   photo: base + "/wp-content/uploads/2026/03/SUP_160326.jpeg",
+  // },
 ];
 
 export const facultyPdf =

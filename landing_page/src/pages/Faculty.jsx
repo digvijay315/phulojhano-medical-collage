@@ -1,9 +1,28 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
+import axios from "axios";
 import PageHeader from "../components/PageHeader";
-import { faculty, facultyPdf } from "../data/site";
+import { facultyPdf } from "../data/site";
 
 export default function Faculty() {
   const [query, setQuery] = useState("");
+  const [faculty, setFaculty] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchFaculty = async () => {
+      try {
+        const res = await axios.get("http://localhost:5000/api/staff?type=teaching&limit=200");
+        if (res.data && res.data.success) {
+          setFaculty(res.data.items);
+        }
+      } catch (err) {
+        console.error("Failed to fetch faculty:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchFaculty();
+  }, []);
 
   const rows = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -11,7 +30,7 @@ export default function Faculty() {
     return faculty.filter((f) =>
       `${f.name} ${f.post} ${f.department}`.toLowerCase().includes(q),
     );
-  }, [query]);
+  }, [query, faculty]);
 
   return (
     <>
@@ -44,28 +63,43 @@ export default function Faculty() {
           <table className="w-full min-w-[560px] text-left text-sm">
             <thead className="bg-muted text-xs uppercase tracking-wider text-muted-foreground">
               <tr>
+                <th className="px-5 py-3 w-16">Photo</th>
                 <th className="px-5 py-3">Name</th>
                 <th className="px-5 py-3">Post</th>
                 <th className="px-5 py-3">Department</th>
               </tr>
             </thead>
             <tbody>
-              {rows.map((f) => (
-                <tr key={f.name + f.department} className="border-t border-border">
-                  <td className="px-5 py-3 font-medium">{f.name}</td>
-                  <td className="px-5 py-3 text-muted-foreground">{f.post}</td>
-                  <td className="px-5 py-3 text-muted-foreground">
-                    {f.department}
+              {loading ? (
+                <tr>
+                  <td className="px-5 py-6 text-center text-muted-foreground" colSpan={4}>
+                    Loading faculty...
                   </td>
                 </tr>
-              ))}
-              {rows.length === 0 ? (
+              ) : rows.length === 0 ? (
                 <tr>
-                  <td className="px-5 py-6 text-muted-foreground" colSpan={3}>
+                  <td className="px-5 py-6 text-center text-muted-foreground" colSpan={4}>
                     No matching faculty found.
                   </td>
                 </tr>
-              ) : null}
+              ) : (
+                rows.map((f) => (
+                  <tr key={f._id || f.name + f.department} className="border-t border-border">
+                    <td className="px-5 py-3">
+                      {f.imageUrl ? (
+                        <img src={f.imageUrl} alt={f.name} className="w-10 h-10 rounded-full object-cover border border-border" />
+                      ) : (
+                        <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center border border-primary/20 text-primary font-bold text-sm">
+                          {f.name ? f.name.charAt(0).toUpperCase() : '?'}
+                        </div>
+                      )}
+                    </td>
+                    <td className="px-5 py-3 font-medium">{f.name}</td>
+                    <td className="px-5 py-3 text-muted-foreground">{f.post}</td>
+                    <td className="px-5 py-3 text-muted-foreground">{f.department}</td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>

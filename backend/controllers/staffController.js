@@ -15,14 +15,14 @@ const createStaff = async (req, res) => {
 const getStaff = async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 12;
+    const limit = parseInt(req.query.limit) || 10;
     const type = req.query.type;
 
     const query = type ? { type } : {};
 
     const total = await Staff.countDocuments(query);
     const items = await Staff.find(query)
-      .sort({ createdAt: -1 })
+      .sort({ createdAt: 1 })
       .skip((page - 1) * limit)
       .limit(limit);
 

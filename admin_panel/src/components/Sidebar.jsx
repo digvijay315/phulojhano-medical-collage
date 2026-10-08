@@ -89,7 +89,7 @@ export default function Sidebar() {
       title: 'Notices & Tenders',
       icon: <Bell size={20} />,
       items: [
-        { name: 'Recruitment', path: '/notices/recruitment' },
+        { name: 'Announcements', path: '/notices/announcements' },
         { name: 'Tenders', path: '/notices/tenders' },
       ]
     },
@@ -141,6 +141,18 @@ export default function Sidebar() {
         >
           <FileText size={20} />
           <span className="font-medium">Global Site Content</span>
+        </Link>
+        
+        <Link
+          to="/chatbot"
+          className={`flex items-center gap-3 px-4 py-3 mb-4 rounded-lg transition-colors ${
+            location.pathname === '/chatbot' 
+              ? 'bg-accent text-accent-foreground' 
+              : 'hover:bg-primary-foreground/10 text-primary-foreground/90'
+          }`}
+        >
+          <Bell size={20} />
+          <span className="font-medium">Chatbot Q&A</span>
         </Link>
         
         {groups.map((group) => (

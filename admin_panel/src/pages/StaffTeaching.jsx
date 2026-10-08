@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import api from '../api';
 import { Upload, Loader2, Trash2, Edit2, Image as ImageIcon } from 'lucide-react';
+import { useToast } from '../context/ToastContext';
+import { useConfirm } from '../context/ConfirmContext';
 
 export default function StaffTeaching() {
   const [formData, setFormData] = useState({
@@ -10,7 +12,6 @@ export default function StaffTeaching() {
   });
   const [file, setFile] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState('');
   
   const [items, setItems] = useState([]);
   const [page, setPage] = useState(1);
@@ -19,6 +20,9 @@ export default function StaffTeaching() {
   
   const [editingId, setEditingId] = useState(null);
   const staffType = 'teaching';
+  
+  const { addToast } = useToast();
+  const { confirm } = useConfirm();
 
   const fetchItems = async (currentPage) => {
     setFetching(true);
@@ -54,12 +58,11 @@ export default function StaffTeaching() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!formData.name || !formData.post || !formData.department) {
-      setMessage('Name, Post, and Department are required fields.');
+      addToast('Name, Post, and Department are required fields.', 'error');
       return;
     }
 
     setLoading(true);
-    setMessage('');
 
     try {
       let imageUrl = null;
@@ -84,10 +87,10 @@ export default function StaffTeaching() {
 
       if (editingId) {
         await api.put(`/staff/${editingId}`, payload);
-        setMessage('Staff profile updated successfully!');
+        addToast('Staff profile updated successfully!', 'success');
       } else {
         await api.post('/staff', payload);
-        setMessage('Staff profile added successfully!');
+        addToast('Staff profile added successfully!', 'success');
       }
 
       setFormData({ name: '', post: '', department: '' });
@@ -97,19 +100,27 @@ export default function StaffTeaching() {
       
     } catch (error) {
       console.error(error);
-      setMessage('Failed to process request.');
+      addToast('Failed to process request.', 'error');
     } finally {
       setLoading(false);
     }
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm("Are you sure you want to remove this staff member?")) return;
+    const isConfirmed = await confirm(
+      "Delete Staff Member",
+      "Are you sure you want to remove this staff member? This action cannot be undone."
+    );
+    
+    if (!isConfirmed) return;
+    
     try {
       await api.delete(`/staff/${id}`);
+      addToast('Staff member deleted successfully.', 'success');
       fetchItems(page);
     } catch (error) {
       console.error("Delete failed", error);
+      addToast('Failed to delete staff member.', 'error');
     }
   };
 
@@ -139,12 +150,6 @@ export default function StaffTeaching() {
 
       <div>
         <h2 className="text-xl font-bold mb-6 text-primary border-b pb-2">{editingId ? 'Edit Profile' : 'Add New Member'}</h2>
-        
-        {message && (
-          <div className={`p-4 mb-6 rounded-md ${message.includes('success') ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>
-            {message}
-          </div>
-        )}
 
         <form onSubmit={handleSubmit} className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
@@ -228,30 +233,81 @@ export default function StaffTeaching() {
         ) : items.length === 0 ? (
           <div className="text-center p-10 text-gray-500 bg-gray-50 rounded-lg border border-dashed border-gray-200">No staff members found.</div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-            {items.map(item => (
-              <div key={item._id} className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden flex flex-col">
-                <div className="h-48 bg-gray-100 relative">
-                  {item.imageUrl ? (
-                    <img src={item.imageUrl} alt={item.name} className="w-full h-full object-cover" />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center">
-                      <ImageIcon className="w-16 h-16 text-gray-300" />
-                    </div>
-                  )}
-                </div>
-                <div className="p-4 flex-1 flex flex-col">
-                  <h3 className="font-bold text-lg text-gray-800 line-clamp-1">{item.name}</h3>
-                  <p className="text-primary font-medium text-sm mt-1">{item.post}</p>
-                  <p className="text-gray-500 text-sm">{item.department}</p>
-                  
-                  <div className="flex justify-end gap-2 mt-4 pt-4 border-t mt-auto">
-                    <button onClick={() => handleEdit(item)} className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"><Edit2 size={18} /></button>
-                    <button onClick={() => handleDelete(item._id)} className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"><Trash2 size={18} /></button>
-                  </div>
-                </div>
+          <div className="overflow-x-auto bg-white rounded-xl shadow-sm border border-gray-100">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="bg-gray-50 border-b border-gray-100">
+                  <th className="p-4 font-medium text-gray-600">Photo</th>
+                  <th className="p-4 font-medium text-gray-600">Name</th>
+                  <th className="p-4 font-medium text-gray-600">Designation</th>
+                  <th className="p-4 font-medium text-gray-600">Department</th>
+                  <th className="p-4 font-medium text-gray-600 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {items.map(item => (
+                  <tr key={item._id} className="hover:bg-gray-50/50 transition-colors">
+                    <td className="p-4">
+                      {item.imageUrl ? (
+                        <img src={item.imageUrl} alt={item.name} className="w-12 h-12 rounded-full object-cover border border-gray-200" />
+                      ) : (
+                        <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center border border-primary/20 text-primary font-bold text-lg">
+                          {item.name ? item.name.charAt(0).toUpperCase() : '?'}
+                        </div>
+                      )}
+                    </td>
+                    <td className="p-4 font-medium text-gray-800">{item.name}</td>
+                    <td className="p-4 text-primary">{item.post}</td>
+                    <td className="p-4 text-gray-600">{item.department}</td>
+                    <td className="p-4">
+                      <div className="flex justify-end gap-2">
+                        <button onClick={() => handleEdit(item)} className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" title="Edit"><Edit2 size={18} /></button>
+                        <button onClick={() => handleDelete(item._id)} className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="Delete"><Trash2 size={18} /></button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+        
+        {!fetching && totalPages > 1 && (
+          <div className="flex items-center justify-between mt-6 bg-white p-4 rounded-xl border border-gray-100 shadow-sm">
+            <span className="text-sm text-gray-600">
+              Page <span className="font-medium text-gray-900">{page}</span> of <span className="font-medium text-gray-900">{totalPages}</span>
+            </span>
+            <div className="flex items-center gap-2">
+              <button 
+                onClick={() => setPage(p => Math.max(1, p - 1))}
+                disabled={page === 1}
+                className="px-4 py-2 border border-gray-200 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                Previous
+              </button>
+              <div className="flex gap-1 hidden sm:flex">
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map(p => (
+                  <button
+                    key={p}
+                    onClick={() => setPage(p)}
+                    className={`w-9 h-9 flex items-center justify-center rounded-lg text-sm font-medium transition-colors ${
+                      page === p 
+                        ? 'bg-primary text-primary-foreground' 
+                        : 'text-gray-600 hover:bg-gray-100'
+                    }`}
+                  >
+                    {p}
+                  </button>
+                ))}
               </div>
-            ))}
+              <button 
+                onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                disabled={page === totalPages}
+                className="px-4 py-2 border border-gray-200 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                Next
+              </button>
+            </div>
           </div>
         )}
       </div>

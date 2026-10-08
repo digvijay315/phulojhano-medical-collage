@@ -14,6 +14,7 @@ import Students from "./pages/Students";
 import Tenders from "./pages/Tenders";
 import Chatbot from "./components/Chatbot";
 import WelcomePopup from "./components/WelcomePopup";
+import NotFound from "./pages/NotFound";
 
 export default function App() {
   return (
@@ -33,6 +34,7 @@ export default function App() {
             <Route path="/stipends" element={<Stipends />} />
             <Route path="/students" element={<Students />} />
             <Route path="/tender" element={<Tenders />} />
+            <Route path="*" element={<NotFound />} />
           </Routes>
         </main>
         <Footer />

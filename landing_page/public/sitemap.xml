@@ -22,13 +22,38 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://dumkamedicalcollege.org/contact</loc>
+    <changefreq>yearly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
     <loc>https://dumkamedicalcollege.org/faculty</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://dumkamedicalcollege.org/contact</loc>
-    <changefreq>yearly</changefreq>
-    <priority>0.7</priority>
+    <loc>https://dumkamedicalcollege.org/gallery</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://dumkamedicalcollege.org/recruitment</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://dumkamedicalcollege.org/stipends</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://dumkamedicalcollege.org/students</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://dumkamedicalcollege.org/tender</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
   </url>
 </urlset>

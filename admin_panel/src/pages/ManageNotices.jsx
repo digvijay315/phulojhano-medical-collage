@@ -16,7 +16,8 @@ export default function ManageNotices() {
     title: '',
     description: '',
     category: 'General',
-    date: new Date().toISOString().split('T')[0]
+    date: new Date().toISOString().split('T')[0],
+    isNewFlash: false
   });
 
   const { addToast } = useToast();
@@ -42,7 +43,8 @@ export default function ManageNotices() {
   }, []);
 
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const { name, value, type, checked } = e.target;
+    setFormData({ ...formData, [name]: type === 'checkbox' ? checked : value });
   };
 
   const handleFileChange = (e) => {
@@ -99,7 +101,8 @@ export default function ManageNotices() {
       title: item.title,
       description: item.description || '',
       category: item.category,
-      date: new Date(item.date).toISOString().split('T')[0]
+      date: new Date(item.date).toISOString().split('T')[0],
+      isNewFlash: item.isNewFlash || false
     });
     setFile(null);
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -123,7 +126,7 @@ export default function ManageNotices() {
 
   const cancelEdit = () => {
     setEditingId(null);
-    setFormData({ title: '', description: '', category: 'General', date: new Date().toISOString().split('T')[0] });
+    setFormData({ title: '', description: '', category: 'General', date: new Date().toISOString().split('T')[0], isNewFlash: false });
     setFile(null);
   };
 
@@ -177,6 +180,22 @@ export default function ManageNotices() {
               onChange={handleChange}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none"
             />
+          </div>
+          <div className="space-y-1">
+            <label className="text-sm font-medium text-gray-700">Show "New" Flash</label>
+            <div className="flex items-center mt-2">
+              <label className="relative inline-flex items-center cursor-pointer">
+                <input 
+                  type="checkbox" 
+                  name="isNewFlash"
+                  checked={formData.isNewFlash}
+                  onChange={handleChange}
+                  className="sr-only peer"
+                />
+                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                <span className="ml-3 text-sm font-medium text-gray-700">{formData.isNewFlash ? 'Yes (Flash)' : 'No Flash'}</span>
+              </label>
+            </div>
           </div>
           <div className="space-y-1 md:col-span-2">
             <label className="text-sm font-medium text-gray-700">Description (Optional)</label>
@@ -248,7 +267,10 @@ export default function ManageNotices() {
                       {new Date(item.date).toLocaleDateString()}
                     </td>
                     <td className="p-4">
-                      <div className="font-bold text-gray-900">{item.title}</div>
+                      <div className="font-bold text-gray-900 flex items-center gap-2">
+                        {item.title}
+                        {item.isNewFlash && <span className="px-2 py-0.5 bg-red-100 text-red-600 text-[10px] font-bold rounded-full animate-pulse">NEW</span>}
+                      </div>
                       <div className="text-xs font-semibold uppercase tracking-wider text-primary mt-1">{item.category}</div>
                       {item.description && <div className="text-sm text-gray-500 mt-1 line-clamp-1">{item.description}</div>}
                     </td>

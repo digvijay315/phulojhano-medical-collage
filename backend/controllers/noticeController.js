@@ -14,8 +14,8 @@ const getNotices = async (req, res) => {
 
 const createNotice = async (req, res) => {
   try {
-    const { title, description, pdfUrl, date, category } = req.body;
-    const newItem = new Notice({ title, description, pdfUrl, date, category });
+    const { title, description, pdfUrl, date, category, isNewFlash } = req.body;
+    const newItem = new Notice({ title, description, pdfUrl, date, category, isNewFlash });
     await newItem.save();
     res.status(201).json({ success: true, item: newItem });
   } catch (error) {
@@ -26,9 +26,9 @@ const createNotice = async (req, res) => {
 const updateNotice = async (req, res) => {
   try {
     const { id } = req.params;
-    const { title, description, pdfUrl, date, category } = req.body;
+    const { title, description, pdfUrl, date, category, isNewFlash } = req.body;
     
-    const updateData = { title, description, date, category };
+    const updateData = { title, description, date, category, isNewFlash };
     if (pdfUrl) updateData.pdfUrl = pdfUrl;
 
     const updated = await Notice.findByIdAndUpdate(id, updateData, { new: true });

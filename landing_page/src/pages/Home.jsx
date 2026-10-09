@@ -198,19 +198,22 @@ export default function Home() {
             transition={{ duration: 0.6 }}
             className="rounded-2xl border border-border bg-secondary p-6"
           >
-            <h2 className="font-serif text-xl font-semibold">Latest Notices</h2>
+            <h2 className="font-serif text-xl font-semibold">Latest Announcements</h2>
             
             {latestNotices.length > 0 ? (
               <ul className="mt-4 space-y-3">
                 {latestNotices.map((notice) => (
                   <li key={notice._id} className="border-b border-border pb-3">
-                    <p className="text-sm font-medium">
+                    <p className="text-sm font-medium flex items-center gap-2">
                       {notice.pdfUrl ? (
                         <a href={notice.pdfUrl} target="_blank" rel="noreferrer" className="hover:text-accent transition-colors">
                           {notice.title}
                         </a>
                       ) : (
                         <span>{notice.title}</span>
+                      )}
+                      {notice.isNewFlash && (
+                        <span className="px-2 py-0.5 bg-red-100 text-red-600 text-[10px] font-bold rounded-full animate-pulse">NEW</span>
                       )}
                     </p>
                     <p className="text-xs text-muted-foreground flex justify-between mt-1">

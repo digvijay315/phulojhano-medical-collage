@@ -6,6 +6,7 @@ const noticeSchema = new mongoose.Schema({
   pdfUrl: { type: String }, // Optional, can be text notice or PDF attachment
   date: { type: Date, default: Date.now },
   category: { type: String, default: 'General' }, // 'General', 'Recruitment', 'Stipends'
+  isNewFlash: { type: Boolean, default: false },
   createdAt: { type: Date, default: Date.now }
 });
 

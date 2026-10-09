@@ -1,7 +1,8 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: 'http://localhost:5000/api',
+  // baseURL: 'http://localhost:5000/api',
+  baseURL: 'https://phulojhano-medical-collage-1.onrender.com/api',
 });
 
 // Add a request interceptor to attach the token

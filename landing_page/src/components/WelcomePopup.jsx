@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link } from "react-router-dom";
-import axios from "axios";
+import api from "../api";
 
 export default function WelcomePopup() {
   const [isVisible, setIsVisible] = useState(false);
@@ -10,7 +10,7 @@ export default function WelcomePopup() {
   useEffect(() => {
     const fetchContent = async () => {
       try {
-        const res = await axios.get("http://localhost:5000/api/content");
+        const res = await api.get("/content");
         if (res.data.success && res.data.item) {
           setContent(res.data.item);
           

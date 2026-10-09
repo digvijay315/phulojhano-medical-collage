@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import MarqueeComponent from "react-fast-marquee";
 const Marquee = MarqueeComponent.default || MarqueeComponent;
 import { nav, college as defaultCollege } from "../data/site";
-import axios from "axios";
+import api from "../api";
 
 function NavLink({ item, onNavigate }) {
   const cls =
@@ -74,7 +74,7 @@ export default function Header() {
   useEffect(() => {
     const fetchContent = async () => {
       try {
-        const res = await axios.get("http://localhost:5000/api/content");
+        const res = await api.get("/content");
         if (res.data.success && res.data.item) {
           setContent(res.data.item);
         }

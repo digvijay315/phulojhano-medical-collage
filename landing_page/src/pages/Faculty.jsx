@@ -1,5 +1,5 @@
 import { useMemo, useState, useEffect } from "react";
-import axios from "axios";
+import api from "../api";
 import PageHeader from "../components/PageHeader";
 import { facultyPdf } from "../data/site";
 
@@ -11,7 +11,7 @@ export default function Faculty() {
   useEffect(() => {
     const fetchFaculty = async () => {
       try {
-        const res = await axios.get("http://localhost:5000/api/staff?type=teaching&limit=200");
+        const res = await api.get("/staff?type=teaching&limit=200");
         if (res.data && res.data.success) {
           setFaculty(res.data.items);
         }

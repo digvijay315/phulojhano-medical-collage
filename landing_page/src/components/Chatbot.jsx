@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import axios from "axios";
+import api from "../api";
 
 export default function Chatbot() {
   const [isOpen, setIsOpen] = useState(false);
@@ -15,7 +15,7 @@ export default function Chatbot() {
   useEffect(() => {
     const fetchFaqs = async () => {
       try {
-        const res = await axios.get("http://localhost:5000/api/chatbot");
+        const res = await api.get("/chatbot");
         if (res.data.success && res.data.items) {
           setFaqs(res.data.items);
         }

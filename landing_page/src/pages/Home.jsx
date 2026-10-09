@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
+import { useQuery } from "@tanstack/react-query";
+import api from "../api";
 import {
   heroSlides,
   msrDisclosures,
@@ -93,6 +95,13 @@ function Hero() {
 
 export default function Home() {
   const [latestNotices, setLatestNotices] = useState([]);
+  const { data: photos = [], isLoading: isLoadingPhotos } = useQuery({
+    queryKey: ['gallery', 'home'],
+    queryFn: async () => {
+      const res = await api.get('/gallery?type=photo&limit=8');
+      return res.data.items || [];
+    }
+  });
 
   useEffect(() => {
     const fetchNotices = async () => {
@@ -285,21 +294,26 @@ export default function Home() {
           }}
           className="mt-8 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4"
         >
-          {gallery.slice(0, 8).map((img) => (
+          {isLoadingPhotos && <p className="text-muted-foreground col-span-full">Loading gallery...</p>}
+          {!isLoadingPhotos && photos.length === 0 && <p className="text-muted-foreground col-span-full">No photos available.</p>}
+          {photos.map((img) => (
             <motion.a
-              key={img.full}
-              href={img.full}
+              key={img._id}
+              href={img.url}
               target="_blank"
               rel="noreferrer"
               variants={{ hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0 } }}
-              className="overflow-hidden rounded-xl border border-border"
+              className="group overflow-hidden rounded-xl border border-border bg-card flex flex-col"
             >
-              <img
-                src={img.thumb}
-                alt={`${college.shortName} campus photo`}
-                loading="lazy"
-                className="h-40 w-full object-cover transition-transform duration-500 hover:scale-105"
-              />
+              <div className="overflow-hidden">
+                <img
+                  src={img.url}
+                  alt={img.title}
+                  loading="lazy"
+                  className="h-40 w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                />
+              </div>
+              <p className="px-3 py-2 text-xs text-muted-foreground truncate">{img.title}</p>
             </motion.a>
           ))}
         </motion.div>

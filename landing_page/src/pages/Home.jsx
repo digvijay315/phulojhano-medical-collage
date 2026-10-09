@@ -95,6 +95,7 @@ function Hero() {
 
 export default function Home() {
   const [latestNotices, setLatestNotices] = useState([]);
+  const [selectedNotice, setSelectedNotice] = useState(null);
   const { data: photos = [], isLoading: isLoadingPhotos } = useQuery({
     queryKey: ['gallery', 'home'],
     queryFn: async () => {
@@ -106,8 +107,8 @@ export default function Home() {
   useEffect(() => {
     const fetchNotices = async () => {
       try {
-        const response = await fetch("http://localhost:5000/api/notices");
-        const data = await response.json();
+        const response = await api.get('/notices');
+        const data = response.data;
         if (data.success && data.items) {
           // Sort by date descending and take top 5
           const sorted = data.items.sort((a, b) => new Date(b.date) - new Date(a.date));
@@ -209,6 +210,10 @@ export default function Home() {
                         <a href={notice.pdfUrl} target="_blank" rel="noreferrer" className="hover:text-accent transition-colors">
                           {notice.title}
                         </a>
+                      ) : notice.description ? (
+                        <button onClick={() => setSelectedNotice(notice)} className="text-left hover:text-accent transition-colors">
+                          {notice.title}
+                        </button>
                       ) : (
                         <span>{notice.title}</span>
                       )}
@@ -321,6 +326,33 @@ export default function Home() {
           ))}
         </motion.div>
       </section>
+
+      {/* Modal for Notice Description */}
+      {selectedNotice && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="bg-white rounded-2xl p-6 max-w-md w-full shadow-xl"
+          >
+            <h3 className="text-xl font-bold font-serif mb-2">{selectedNotice.title}</h3>
+            <p className="text-sm text-muted-foreground mb-4">
+              {new Date(selectedNotice.date).toLocaleDateString()} | {selectedNotice.category}
+            </p>
+            <div className="text-gray-700 whitespace-pre-wrap max-h-[60vh] overflow-y-auto">
+              {selectedNotice.description}
+            </div>
+            <div className="mt-6 flex justify-end">
+              <button
+                onClick={() => setSelectedNotice(null)}
+                className="px-4 py-2 bg-primary text-primary-foreground rounded-lg font-medium hover:bg-primary/90 transition-colors"
+              >
+                Close
+              </button>
+            </div>
+          </motion.div>
+        </div>
+      )}
     </>
   );
 }

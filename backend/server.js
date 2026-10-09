@@ -10,7 +10,8 @@ const PORT = process.env.PORT || 5000;
 
 // Security & Utility Middlewares
 app.use(helmet()); // Secure HTTP headers
-app.use(cors({ origin: ['http://localhost:5173', 'http://localhost:5174'] }));
+// app.use(cors({ origin: ['http://localhost:5173', 'http://localhost:5174'] }));
+app.use(cors())
 app.use(express.json()); // Parse JSON bodies
 app.use(express.urlencoded({ extended: true }));
 app.use(morgan('dev')); // Logger

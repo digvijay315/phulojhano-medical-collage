@@ -5,6 +5,7 @@ import { useToast } from '../context/ToastContext';
 import { useConfirm } from '../context/ConfirmContext';
 
 export default function ManageChatbot() {
+  const [deletingId, setDeletingId] = useState(null);
   const [items, setItems] = useState([]);
   const [fetching, setFetching] = useState(true);
   const [loading, setLoading] = useState(false);
@@ -81,11 +82,14 @@ export default function ManageChatbot() {
   const handleDelete = async (id) => {
     const isConfirmed = await confirm("Delete Q&A", "Are you sure you want to delete this chatbot question?");
     if (!isConfirmed) return;
+    setDeletingId(id);
     try {
       await api.delete(`/chatbot/${id}`);
       addToast('Q&A deleted successfully', 'success');
       fetchItems();
+      setDeletingId(null);
     } catch (error) {
+      setDeletingId(null);
       console.error(error);
       addToast('Failed to delete', 'error');
     }
@@ -187,7 +191,7 @@ export default function ManageChatbot() {
                 </div>
                 <div className="flex gap-2 shrink-0">
                   <button onClick={() => handleEdit(item)} className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"><Edit2 size={18} /></button>
-                  <button onClick={() => handleDelete(item._id)} className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"><Trash2 size={18} /></button>
+                  <button onClick={() => handleDelete(item._id)} className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors">{deletingId === item._id ? <Loader2 className="animate-spin" size={18} /> : <Trash2 size={18} />}</button>
                 </div>
               </div>
             ))}

@@ -1,8 +1,14 @@
 import { useState, useEffect } from 'react';
+import { useToast } from '../context/ToastContext';
+import { useConfirm } from '../context/ConfirmContext';
 import api from '../api';
 import { Upload, Loader2, Trash2, Edit2, FileText, Download } from 'lucide-react';
 
 export default function Results() {
+  const [deletingId, setDeletingId] = useState(null);
+  const { addToast } = useToast();
+  const { confirm } = useConfirm();
+
   const [title, setTitle] = useState('');
   const [file, setFile] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -52,8 +58,12 @@ export default function Results() {
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm("Delete?")) return;
-    await api.delete(`/documents/${id}`); fetchItems(page);
+    const isConfirmed = await confirm('Confirm Delete', 'Delete?');
+    if (!isConfirmed) return;
+    setDeletingId(id);
+    await api.delete(`/documents/${id}`);
+      addToast('Deleted successfully', 'success'); fetchItems(page);
+      setDeletingId(null);
   };
 
   const handleEdit = (item) => {

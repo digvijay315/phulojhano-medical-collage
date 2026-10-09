@@ -18,25 +18,27 @@ const uploadToCloudinary = async (req, res) => {
     const fileArray = Array.isArray(files) ? files : [files];
 
     const uploadPromises = fileArray.map((file) => {
-      const originalName = path.parse(file.originalname).name.replace(/\s/g, "_");
+      const parsedPath = path.parse(file.originalname);
+      const originalName = parsedPath.name.replace(/\s/g, "_");
+      const ext = parsedPath.ext;
       
       // Detect type based on file mimetype
       let resourceType = "auto"; // default for all
       if (file.mimetype.startsWith("video/")) resourceType = "video";
-      else if (file.mimetype.startsWith("image/")) resourceType = "image";
+      else if (file.mimetype.startsWith("image/") || file.mimetype === "application/pdf") resourceType = "image";
       else if (file.mimetype.startsWith("audio/")) resourceType = "video"; // audio works as video type on Cloudinary
-      else resourceType = "raw"; // for PDFs, docs, etc.
+      else resourceType = "raw"; // for docs, zips, etc.
 
       const options = {
         folder: "phulojhano_uploads",
         resource_type: resourceType,
-        public_id: originalName,
+        public_id: resourceType === "raw" ? `${originalName}${ext}` : originalName,
         use_filename: true,
         unique_filename: false,
         overwrite: false,
       };
 
-      if (resourceType === "image") {
+      if (resourceType === "image" && file.mimetype !== "application/pdf") {
         options.format = "webp"; // Modern format for better compression
         options.transformation = [
           { width: 1280, height: 1280, crop: "limit" }, // Prevent massive 4K uploads

@@ -1,9 +1,15 @@
 // Nearly identical to HostelFacility, but category='canteen'
 import { useState, useEffect } from 'react';
+import { useToast } from '../context/ToastContext';
+import { useConfirm } from '../context/ConfirmContext';
 import api from '../api';
-import { Upload, Loader2, Trash2, Edit2 } from 'lucide-react';
+import { Upload, Loader2, Trash2, Edit2, Image as ImageIcon } from 'lucide-react';
 
 export default function Canteen() {
+  const [deletingId, setDeletingId] = useState(null);
+  const { addToast } = useToast();
+  const { confirm } = useConfirm();
+
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [file, setFile] = useState(null);
@@ -54,8 +60,12 @@ export default function Canteen() {
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm("Delete?")) return;
-    await api.delete(`/facilities/${id}`); fetchItems(page);
+    const isConfirmed = await confirm('Confirm Delete', 'Delete?');
+    if (!isConfirmed) return;
+    setDeletingId(id);
+    await api.delete(`/facilities/${id}`);
+      addToast('Deleted successfully', 'success'); fetchItems(page);
+      setDeletingId(null);
   };
 
   const handleEdit = (item) => {
@@ -82,8 +92,29 @@ export default function Canteen() {
             <textarea value={description} onChange={(e) => setDescription(e.target.value)} className="w-full px-4 py-2 border rounded-lg" rows="4" placeholder="Details..."></textarea>
           </div>
           <div className="mb-6">
-            <label className="block text-sm font-medium text-gray-700 mb-1">Upload Image (Optional)</label>
-            <input type="file" accept="image/*" onChange={(e) => setFile(e.target.files[0])} className="w-full" />
+            <label className="block text-sm font-medium text-gray-700 mb-1">Upload Image (Optional) {editingId && '(Leave blank to keep existing)'}</label>
+            
+            <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-lg hover:border-primary transition-colors bg-gray-50">
+              <div className="space-y-1 text-center">
+                <ImageIcon className="mx-auto h-12 w-12 text-gray-400" />
+                <div className="flex text-sm text-gray-600 justify-center">
+                  <label className="relative cursor-pointer bg-white rounded-md font-medium text-primary hover:text-primary/80 focus-within:outline-none">
+                    <span>{file ? file.name : 'Click to browse Image'}</span>
+                    <input type="file" className="sr-only" accept="image/*" onChange={(e) => setFile(e.target.files[0])} />
+                  </label>
+                </div>
+                {!file && <p className="text-xs text-gray-500">PNG, JPG, WEBP up to 10MB</p>}
+              </div>
+            </div>
+            {file && (
+               <button 
+                 type="button" 
+                 onClick={() => setFile(null)}
+                 className="text-xs text-red-500 mt-2 font-medium hover:underline"
+               >
+                 Remove selected file
+               </button>
+            )}
           </div>
           <button type="submit" disabled={loading} className="w-full bg-primary text-white py-2 rounded-lg">{loading ? 'Saving...' : 'Save'}</button>
         </form>
@@ -99,7 +130,7 @@ export default function Canteen() {
               <p className="text-gray-600 text-sm mt-2 flex-1">{item.description}</p>
               <div className="flex justify-end gap-3 mt-4 pt-4 border-t">
                 <button onClick={() => handleEdit(item)} className="text-blue-600 flex items-center gap-1"><Edit2 size={16}/> Edit</button>
-                <button onClick={() => handleDelete(item._id)} className="text-red-600 flex items-center gap-1"><Trash2 size={16}/> Delete</button>
+                <button onClick={() => handleDelete(item._id)} className="text-red-600 flex items-center gap-1">{deletingId === item._id ? <Loader2 className="animate-spin" size={16} /> : <Trash2 size={16} />}</button>
               </div>
             </div>
           ))}

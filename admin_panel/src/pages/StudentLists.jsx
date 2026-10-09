@@ -1,8 +1,14 @@
 import { useState, useEffect } from 'react';
+import { useToast } from '../context/ToastContext';
+import { useConfirm } from '../context/ConfirmContext';
 import api from '../api';
 import { Upload, Loader2, Trash2, Edit2, ChevronLeft, ChevronRight, FileText, Download } from 'lucide-react';
 
 export default function StudentLists() {
+  const [deletingId, setDeletingId] = useState(null);
+  const { addToast } = useToast();
+  const { confirm } = useConfirm();
+
   const [title, setTitle] = useState('');
   const [file, setFile] = useState(null);
   
@@ -93,11 +99,16 @@ export default function StudentLists() {
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this list?")) return;
+    const isConfirmed = await confirm('Confirm Delete', 'Are you sure you want to delete this list?');
+    if (!isConfirmed) return;
+    setDeletingId(id);
     try {
       await api.delete(`/documents/${id}`);
+      addToast('Deleted successfully', 'success');
       fetchItems(page);
+      setDeletingId(null);
     } catch (error) {
+      setDeletingId(null);
       console.error("Delete failed", error);
     }
   };
@@ -205,7 +216,7 @@ export default function StudentLists() {
                     <td className="p-4 text-right">
                       <div className="flex items-center justify-end gap-2">
                         <button onClick={() => handleEdit(item)} className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"><Edit2 size={18} /></button>
-                        <button onClick={() => handleDelete(item._id)} className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"><Trash2 size={18} /></button>
+                        <button onClick={() => handleDelete(item._id)} className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors">{deletingId === item._id ? <Loader2 className="animate-spin" size={18} /> : <Trash2 size={18} />}</button>
                       </div>
                     </td>
                   </tr>

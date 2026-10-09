@@ -1,4 +1,7 @@
+import { useQuery } from "@tanstack/react-query";
 import PageHeader from "../components/PageHeader";
+import DocList from "../components/DocList";
+import api from "../api";
 
 const phases = [
   {
@@ -20,6 +23,22 @@ const phases = [
 ];
 
 export default function Academics() {
+  const { data: calendars, isLoading: isLoadingCalendars } = useQuery({
+    queryKey: ['documents', 'academic_calendar'],
+    queryFn: async () => {
+      const res = await api.get('/documents?category=academic_calendar&limit=100');
+      return res.data.items.map(i => ({ id: i._id, title: i.title, href: i.pdfUrl }));
+    }
+  });
+
+  const { data: syllabus, isLoading: isLoadingSyllabus } = useQuery({
+    queryKey: ['documents', 'syllabus'],
+    queryFn: async () => {
+      const res = await api.get('/documents?category=syllabus&limit=100');
+      return res.data.items.map(i => ({ id: i._id, title: i.title, href: i.pdfUrl }));
+    }
+  });
+
   return (
     <>
       <PageHeader
@@ -81,6 +100,13 @@ export default function Academics() {
             professional examinations and holidays is issued by the office of the
             Principal each session and published here.
           </p>
+          <div className="mt-6">
+            {isLoadingCalendars && <p className="text-sm text-muted-foreground">Loading academic calendar...</p>}
+            {!isLoadingCalendars && calendars && calendars.length === 0 && (
+              <p className="text-sm text-muted-foreground">No academic calendar published yet.</p>
+            )}
+            {calendars && calendars.length > 0 && <DocList items={calendars} />}
+          </div>
         </div>
 
         <div id="syllabus" className="mt-10 scroll-mt-32">
@@ -90,6 +116,13 @@ export default function Academics() {
             (CBME) curriculum prescribed by the National Medical Commission.
             Subject-wise syllabus documents are published here as released.
           </p>
+          <div className="mt-6">
+            {isLoadingSyllabus && <p className="text-sm text-muted-foreground">Loading syllabus...</p>}
+            {!isLoadingSyllabus && syllabus && syllabus.length === 0 && (
+              <p className="text-sm text-muted-foreground">No syllabus published yet.</p>
+            )}
+            {syllabus && syllabus.length > 0 && <DocList items={syllabus} />}
+          </div>
         </div>
 
         <div className="mt-10 scroll-mt-32">

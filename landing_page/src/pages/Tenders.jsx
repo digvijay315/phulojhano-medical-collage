@@ -1,7 +1,22 @@
+import { useQuery } from "@tanstack/react-query";
 import PageHeader from "../components/PageHeader";
-import { tenders } from "../data/site";
+import api from "../api";
 
 export default function Tenders() {
+  const { data: tenders = [], isLoading, isError } = useQuery({
+    queryKey: ['tenders'],
+    queryFn: async () => {
+      const response = await api.get('/tenders?limit=100');
+      return response.data.items.map(item => ({
+        id: item._id,
+        subject: item.name + (item.subject ? ` - ${item.subject}` : ''),
+        start: new Date(item.startDate).toLocaleDateString(),
+        end: item.endDate ? new Date(item.endDate).toLocaleDateString() : '',
+        files: item.pdfUrl ? [item.pdfUrl] : []
+      }));
+    }
+  });
+
   return (
     <>
       <PageHeader
@@ -10,69 +25,77 @@ export default function Tenders() {
         subtitle="Current and archived tender notices with their submission windows and documents."
       />
       <section className="mx-auto max-w-7xl px-4 py-14">
-        <div className="hidden overflow-x-auto rounded-2xl border border-border bg-card md:block">
-          <table className="w-full min-w-[760px] text-left text-sm">
-            <thead className="bg-muted text-xs uppercase tracking-wider text-muted-foreground">
-              <tr>
-                <th className="px-5 py-3">Subject / Tender</th>
-                <th className="px-5 py-3">Start date</th>
-                <th className="px-5 py-3">End date</th>
-                <th className="px-5 py-3">Download</th>
-              </tr>
-            </thead>
-            <tbody>
-              {tenders.map((t) => (
-                <tr key={t.subject + t.start} className="border-t border-border">
-                  <td className="px-5 py-3 font-medium">{t.subject}</td>
-                  <td className="px-5 py-3 text-muted-foreground">{t.start}</td>
-                  <td className="px-5 py-3 text-muted-foreground">{t.end}</td>
-                  <td className="px-5 py-3">
-                    <span className="flex flex-wrap gap-2">
-                      {t.files.map((f, i) => (
-                        <a
-                          key={f}
-                          href={f}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="rounded-md bg-secondary px-3 py-1.5 text-xs font-semibold hover:bg-accent hover:text-accent-foreground"
-                        >
-                          PDF {t.files.length > 1 ? i + 1 : ""}
-                        </a>
-                      ))}
-                    </span>
-                  </td>
+        {isLoading && <p className="text-center text-muted-foreground pb-8">Loading tenders...</p>}
+        {isError && <p className="text-center text-destructive pb-8">Error loading tenders.</p>}
+        {!isLoading && tenders.length === 0 && <p className="text-center text-muted-foreground pb-8">No active tenders found.</p>}
+        
+        {!isLoading && tenders.length > 0 && (
+          <div className="hidden overflow-x-auto rounded-2xl border border-border bg-card md:block">
+            <table className="w-full min-w-[760px] text-left text-sm">
+              <thead className="bg-muted text-xs uppercase tracking-wider text-muted-foreground">
+                <tr>
+                  <th className="px-5 py-3">Subject / Tender</th>
+                  <th className="px-5 py-3">Start date</th>
+                  <th className="px-5 py-3">End date</th>
+                  <th className="px-5 py-3">Download</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-
-        <ul className="grid gap-4 md:hidden">
-          {tenders.map((t) => (
-            <li
-              key={t.subject + t.start}
-              className="rounded-xl border border-border bg-card p-5"
-            >
-              <p className="text-sm font-semibold">{t.subject}</p>
-              <p className="mt-1 text-xs text-muted-foreground">
-                {t.start} – {t.end}
-              </p>
-              <span className="mt-3 flex flex-wrap gap-2">
-                {t.files.map((f, i) => (
-                  <a
-                    key={f}
-                    href={f}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="rounded-md bg-secondary px-3 py-1.5 text-xs font-semibold"
-                  >
-                    Download PDF {t.files.length > 1 ? i + 1 : ""}
-                  </a>
+              </thead>
+              <tbody>
+                {tenders.map((t) => (
+                  <tr key={t.id} className="border-t border-border">
+                    <td className="px-5 py-3 font-medium">{t.subject}</td>
+                    <td className="px-5 py-3 text-muted-foreground">{t.start}</td>
+                    <td className="px-5 py-3 text-muted-foreground">{t.end}</td>
+                    <td className="px-5 py-3">
+                      <span className="flex flex-wrap gap-2">
+                        {t.files.map((f, i) => (
+                          <a
+                            key={f}
+                            href={f}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="rounded-md bg-secondary px-3 py-1.5 text-xs font-semibold hover:bg-accent hover:text-accent-foreground"
+                          >
+                            PDF {t.files.length > 1 ? i + 1 : ""}
+                          </a>
+                        ))}
+                      </span>
+                    </td>
+                  </tr>
                 ))}
-              </span>
-            </li>
-          ))}
-        </ul>
+              </tbody>
+            </table>
+          </div>
+        )}
+
+        {!isLoading && tenders.length > 0 && (
+          <ul className="grid gap-4 md:hidden">
+            {tenders.map((t) => (
+              <li
+                key={t.id}
+                className="rounded-xl border border-border bg-card p-5"
+              >
+                <p className="text-sm font-semibold">{t.subject}</p>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  {t.start} – {t.end}
+                </p>
+                <span className="mt-3 flex flex-wrap gap-2">
+                  {t.files.map((f, i) => (
+                    <a
+                      key={f}
+                      href={f}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="rounded-md bg-secondary px-3 py-1.5 text-xs font-semibold"
+                    >
+                      Download PDF {t.files.length > 1 ? i + 1 : ""}
+                    </a>
+                  ))}
+                </span>
+              </li>
+            ))}
+          </ul>
+        )}
       </section>
     </>
   );

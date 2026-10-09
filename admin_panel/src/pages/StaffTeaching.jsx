@@ -5,6 +5,7 @@ import { useToast } from '../context/ToastContext';
 import { useConfirm } from '../context/ConfirmContext';
 
 export default function StaffTeaching() {
+  const [deletingId, setDeletingId] = useState(null);
   const [formData, setFormData] = useState({
     name: '',
     post: '',
@@ -113,12 +114,15 @@ export default function StaffTeaching() {
     );
     
     if (!isConfirmed) return;
+    setDeletingId(id);
     
     try {
       await api.delete(`/staff/${id}`);
       addToast('Staff member deleted successfully.', 'success');
       fetchItems(page);
+      setDeletingId(null);
     } catch (error) {
+      setDeletingId(null);
       console.error("Delete failed", error);
       addToast('Failed to delete staff member.', 'error');
     }
@@ -262,7 +266,7 @@ export default function StaffTeaching() {
                     <td className="p-4">
                       <div className="flex justify-end gap-2">
                         <button onClick={() => handleEdit(item)} className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" title="Edit"><Edit2 size={18} /></button>
-                        <button onClick={() => handleDelete(item._id)} className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="Delete"><Trash2 size={18} /></button>
+                        <button onClick={() => handleDelete(item._id)} className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="Delete">{deletingId === item._id ? <Loader2 className="animate-spin" size={18} /> : <Trash2 size={18} />}</button>
                       </div>
                     </td>
                   </tr>

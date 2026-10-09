@@ -1,9 +1,15 @@
 // Similar structure to StaffTeaching, just with staffType = 'non-teaching' and slightly different text
 import { useState, useEffect } from 'react';
+import { useToast } from '../context/ToastContext';
+import { useConfirm } from '../context/ConfirmContext';
 import api from '../api';
 import { Upload, Loader2, Trash2, Edit2, Image as ImageIcon } from 'lucide-react';
 
 export default function StaffNonTeaching() {
+  const [deletingId, setDeletingId] = useState(null);
+  const { addToast } = useToast();
+  const { confirm } = useConfirm();
+
   const [formData, setFormData] = useState({
     name: '',
     post: '',
@@ -105,11 +111,16 @@ export default function StaffNonTeaching() {
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm("Are you sure you want to remove this staff member?")) return;
+    const isConfirmed = await confirm('Confirm Delete', 'Are you sure you want to remove this staff member?');
+    if (!isConfirmed) return;
+    setDeletingId(id);
     try {
       await api.delete(`/staff/${id}`);
+      addToast('Deleted successfully', 'success');
       fetchItems(page);
+      setDeletingId(null);
     } catch (error) {
+      setDeletingId(null);
       console.error("Delete failed", error);
     }
   };
@@ -248,7 +259,7 @@ export default function StaffNonTeaching() {
                   
                   <div className="flex justify-end gap-2 mt-4 pt-4 border-t mt-auto">
                     <button onClick={() => handleEdit(item)} className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"><Edit2 size={18} /></button>
-                    <button onClick={() => handleDelete(item._id)} className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"><Trash2 size={18} /></button>
+                    <button onClick={() => handleDelete(item._id)} className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors">{deletingId === item._id ? <Loader2 className="animate-spin" size={18} /> : <Trash2 size={18} />}</button>
                   </div>
                 </div>
               </div>

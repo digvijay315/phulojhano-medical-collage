@@ -11,7 +11,8 @@ export default function Stipends() {
       return response.data.items.map(item => ({
         id: item._id,
         title: item.title,
-        href: item.pdfUrl
+        href: item.pdfUrl,
+        isNewFlash: item.isNewFlash
       }));
     }
   });

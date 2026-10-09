@@ -4,6 +4,7 @@ import Footer from "./components/Footer";
 import Home from "./pages/Home";
 import About from "./pages/About";
 import Academics from "./pages/Academics";
+import Announcements from "./pages/Announcements";
 import Administration from "./pages/Administration";
 import Contact from "./pages/Contact";
 import Faculty from "./pages/Faculty";
@@ -26,6 +27,7 @@ export default function App() {
             <Route path="/" element={<Home />} />
             <Route path="/about" element={<About />} />
             <Route path="/academics" element={<Academics />} />
+            <Route path="/announcements" element={<Announcements />} />
             <Route path="/administration" element={<Administration />} />
             <Route path="/contact" element={<Contact />} />
             <Route path="/faculty" element={<Faculty />} />

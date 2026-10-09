@@ -32,7 +32,7 @@ function Hero() {
   }, []);
 
   return (
-    <section className="relative isolate overflow-hidden bg-primary">
+    <div className="relative w-full h-[60vh] sm:h-[75vh] lg:h-[85vh] overflow-hidden bg-black">
       {heroSlides.map((src, i) => (
         <img
           key={src}
@@ -40,56 +40,24 @@ function Hero() {
           alt="Campus of Phulo Jhano Medical College, Dumka"
           loading={i === 0 ? "eager" : "lazy"}
           className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-1000 ${
-            i === index ? "opacity-40" : "opacity-0"
+            i === index ? "opacity-100" : "opacity-0"
           }`}
         />
       ))}
-      <div className="relative mx-auto max-w-7xl px-4 py-24 sm:py-32">
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, ease: "easeOut" }}
-        >
-          <p className="text-xs font-semibold uppercase tracking-[0.3em] text-accent">
-            Government of Jharkhand
-          </p>
-          <h1 className="mt-4 max-w-3xl font-serif text-4xl font-semibold leading-tight text-primary-foreground sm:text-5xl lg:text-6xl">
-            Phulo Jhano Medical College &amp; Hospital, Dumka
-          </h1>
-          <p className="mt-5 max-w-2xl text-base text-primary-foreground/80 sm:text-lg">
-            Educating the next generation of doctors for the Santhal Pargana region,
-            while providing compassionate tertiary care to the communities we serve.
-          </p>
-          <div className="mt-8 flex flex-wrap gap-3">
-            <Link
-              to="/about"
-              className="rounded-lg bg-accent px-6 py-3 text-sm font-semibold text-accent-foreground transition-transform hover:-translate-y-0.5"
-            >
-              About the College
-            </Link>
-            <Link
-              to="/students"
-              className="rounded-lg border border-primary-foreground/40 px-6 py-3 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary-foreground/10"
-            >
-              Student Information
-            </Link>
-          </div>
-        </motion.div>
-        <div className="mt-10 flex gap-2">
-          {heroSlides.map((s, i) => (
-            <button
-              key={s}
-              type="button"
-              aria-label={`Show slide ${i + 1}`}
-              onClick={() => setIndex(i)}
-              className={`h-1.5 rounded-full transition-all ${
-                i === index ? "w-8 bg-accent" : "w-3 bg-primary-foreground/40"
-              }`}
-            />
-          ))}
-        </div>
+      <div className="absolute bottom-6 left-0 right-0 flex justify-center gap-2 z-10">
+        {heroSlides.map((s, i) => (
+          <button
+            key={s}
+            type="button"
+            aria-label={`Show slide ${i + 1}`}
+            onClick={() => setIndex(i)}
+            className={`h-1.5 rounded-full transition-all ${
+              i === index ? "w-8 bg-white" : "w-3 bg-white/50"
+            }`}
+          />
+        ))}
       </div>
-    </section>
+    </div>
   );
 }
 
@@ -105,25 +73,99 @@ export default function Home() {
   });
 
   useEffect(() => {
-    const fetchNotices = async () => {
+    const fetchLatest = async () => {
       try {
-        const response = await api.get('/notices');
-        const data = response.data;
-        if (data.success && data.items) {
-          // Sort by date descending and take top 5
-          const sorted = data.items.sort((a, b) => new Date(b.date) - new Date(a.date));
-          setLatestNotices(sorted.slice(0, 5));
+        const [noticesRes, tendersRes, docsRes] = await Promise.all([
+          api.get('/notices').catch(() => ({ data: { success: false } })),
+          api.get('/tenders?limit=10').catch(() => ({ data: { success: false } })),
+          api.get('/documents?limit=10').catch(() => ({ data: { success: false } }))
+        ]);
+        
+        let allItems = [];
+        
+        if (noticesRes.data.success && noticesRes.data.items) {
+          allItems = [...allItems, ...noticesRes.data.items];
         }
+        
+        if (tendersRes.data.success && tendersRes.data.items) {
+          const tenders = tendersRes.data.items
+            .filter(item => item.isNewFlash)
+            .map(item => ({
+              ...item, 
+              title: item.name, 
+              description: item.subject, 
+              date: item.createdAt, 
+              category: 'Tender'
+            }));
+          allItems = [...allItems, ...tenders];
+        }
+
+        if (docsRes.data.success && docsRes.data.items) {
+          const docs = docsRes.data.items
+            .filter(item => item.isNewFlash)
+            .map(item => ({
+              ...item, 
+              date: item.createdAt,
+              // category is already there like 'stipend', 'syllabus', etc. Let's uppercase the first letter
+              category: item.category.charAt(0).toUpperCase() + item.category.slice(1).replace('_', ' ')
+            }));
+          allItems = [...allItems, ...docs];
+        }
+
+        // Sort by isNewFlash first, then by date
+        const sorted = allItems.sort((a, b) => {
+          if (a.isNewFlash && !b.isNewFlash) return -1;
+          if (!a.isNewFlash && b.isNewFlash) return 1;
+          return new Date(b.date || b.createdAt) - new Date(a.date || a.createdAt);
+        });
+
+        // Take top 15 items now that we have a scrollbar
+        setLatestNotices(sorted.slice(0, 15));
       } catch (err) {
-        console.error("Failed to fetch notices", err);
+        console.error("Failed to fetch latest items", err);
       }
     };
-    fetchNotices();
+    fetchLatest();
   }, []);
 
   return (
     <>
       <Hero />
+
+      <section className="bg-background">
+        <div className="mx-auto w-full max-w-7xl px-4 py-12 sm:py-16">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, ease: "easeOut" }}
+          >
+            <p className="text-xs font-semibold uppercase tracking-[0.3em] text-accent">
+              Government of Jharkhand
+            </p>
+            <h1 className="mt-4 max-w-3xl font-serif text-4xl font-semibold leading-tight text-foreground sm:text-5xl lg:text-6xl">
+              Phulo Jhano Medical College &amp; Hospital, Dumka
+            </h1>
+            <p className="mt-5 max-w-2xl text-base text-muted-foreground sm:text-lg">
+              Educating the next generation of doctors for the Santhal Pargana region,
+              while providing compassionate tertiary care to the communities we serve.
+            </p>
+            <div className="mt-8 flex flex-wrap gap-3">
+              <Link
+                to="/about"
+                className="rounded-lg bg-accent px-6 py-3 text-sm font-semibold text-accent-foreground transition-transform hover:-translate-y-0.5"
+              >
+                About the College
+              </Link>
+              <Link
+                to="/students"
+                className="rounded-lg border border-border px-6 py-3 text-sm font-semibold text-foreground transition-colors hover:bg-muted"
+              >
+                Student Information
+              </Link>
+            </div>
+          </motion.div>
+        </div>
+      </section>
 
       <section className="border-b border-border bg-card">
         <motion.dl 
@@ -202,32 +244,34 @@ export default function Home() {
             <h2 className="font-serif text-xl font-semibold">Latest Announcements</h2>
             
             {latestNotices.length > 0 ? (
-              <ul className="mt-4 space-y-3">
-                {latestNotices.map((notice) => (
-                  <li key={notice._id} className="border-b border-border pb-3">
-                    <p className="text-sm font-medium flex items-center gap-2">
-                      {notice.pdfUrl ? (
-                        <a href={notice.pdfUrl} target="_blank" rel="noreferrer" className="hover:text-accent transition-colors">
-                          {notice.title}
-                        </a>
-                      ) : notice.description ? (
-                        <button onClick={() => setSelectedNotice(notice)} className="text-left hover:text-accent transition-colors">
-                          {notice.title}
-                        </button>
-                      ) : (
-                        <span>{notice.title}</span>
-                      )}
-                      {notice.isNewFlash && (
-                        <span className="px-2 py-0.5 bg-red-100 text-red-600 text-[10px] font-bold rounded-full animate-pulse">NEW</span>
-                      )}
-                    </p>
-                    <p className="text-xs text-muted-foreground flex justify-between mt-1">
-                      <span>{notice.category}</span>
-                      <span>{new Date(notice.date).toLocaleDateString()}</span>
-                    </p>
-                  </li>
-                ))}
-              </ul>
+              <div className="mt-4 max-h-[300px] overflow-y-auto pr-2">
+                <ul className="space-y-3">
+                  {latestNotices.map((notice) => (
+                    <li key={notice._id} className="border-b border-border pb-3">
+                      <p className="text-sm font-medium flex items-start gap-2">
+                        {notice.pdfUrl ? (
+                          <a href={notice.pdfUrl} target="_blank" rel="noreferrer" className="hover:text-accent transition-colors line-clamp-2 flex-1">
+                            {notice.title}
+                          </a>
+                        ) : notice.description ? (
+                          <button onClick={() => setSelectedNotice(notice)} className="text-left hover:text-accent transition-colors line-clamp-2 flex-1">
+                            {notice.title}
+                          </button>
+                        ) : (
+                          <span className="line-clamp-2 flex-1">{notice.title}</span>
+                        )}
+                        {notice.isNewFlash && (
+                          <span className="px-2 py-0.5 bg-red-100 text-red-600 text-[10px] font-bold rounded-full animate-pulse shrink-0">NEW</span>
+                        )}
+                      </p>
+                      <p className="text-xs text-muted-foreground flex justify-between mt-1">
+                        <span>{notice.category}</span>
+                        <span>{new Date(notice.date).toLocaleDateString()}</span>
+                      </p>
+                    </li>
+                  ))}
+                </ul>
+              </div>
             ) : (
               <p className="mt-4 text-sm text-muted-foreground">No recent notices.</p>
             )}

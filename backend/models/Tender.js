@@ -6,6 +6,7 @@ const tenderSchema = new mongoose.Schema({
   startDate: { type: Date, required: true },
   endDate: { type: Date, required: true },
   pdfUrl: { type: String, required: true },
+  isNewFlash: { type: Boolean, default: false },
   createdAt: { type: Date, default: Date.now }
 });
 

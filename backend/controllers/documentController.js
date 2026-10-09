@@ -3,8 +3,8 @@ const cloudinary = require('cloudinary').v2;
 
 const createDocument = async (req, res) => {
   try {
-    const { title, pdfUrl, category } = req.body;
-    const newDoc = new Document({ title, pdfUrl, category });
+    const { title, pdfUrl, category, isNewFlash } = req.body;
+    const newDoc = new Document({ title, pdfUrl, category, isNewFlash: isNewFlash === true || isNewFlash === 'true' });
     await newDoc.save();
     res.status(201).json({ success: true, item: newDoc });
   } catch (error) {
@@ -41,9 +41,10 @@ const getDocuments = async (req, res) => {
 const updateDocument = async (req, res) => {
   try {
     const { id } = req.params;
-    const { title, pdfUrl } = req.body;
+    const { title, pdfUrl, isNewFlash } = req.body;
     const updateData = { title };
     if (pdfUrl) updateData.pdfUrl = pdfUrl;
+    if (isNewFlash !== undefined) updateData.isNewFlash = isNewFlash === true || isNewFlash === 'true';
 
     const updated = await Document.findByIdAndUpdate(id, updateData, { new: true });
     res.status(200).json({ success: true, item: updated });

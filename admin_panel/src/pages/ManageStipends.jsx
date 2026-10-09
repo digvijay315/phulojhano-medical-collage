@@ -11,6 +11,7 @@ export default function ManageStipends() {
 
   const [title, setTitle] = useState('');
   const [file, setFile] = useState(null);
+  const [isNewFlash, setIsNewFlash] = useState(false);
   
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
@@ -76,17 +77,18 @@ export default function ManageStipends() {
       }
 
       if (editingId) {
-        const payload = { title };
+        const payload = { title, isNewFlash };
         if (pdfUrl) payload.pdfUrl = pdfUrl;
         await api.put(`/documents/${editingId}`, payload);
         setMessage('Stipend record updated successfully!');
       } else {
-        await api.post('/documents', { title, pdfUrl, category });
+        await api.post('/documents', { title, pdfUrl, category, isNewFlash });
         setMessage('Stipend record published successfully!');
       }
 
       setTitle('');
       setFile(null);
+      setIsNewFlash(false);
       setEditingId(null);
       fetchItems(page);
       
@@ -116,6 +118,7 @@ export default function ManageStipends() {
   const handleEdit = (item) => {
     setEditingId(item._id);
     setTitle(item.title);
+    setIsNewFlash(item.isNewFlash || false);
     setFile(null);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -151,6 +154,18 @@ export default function ManageStipends() {
             />
           </div>
 
+          <div className="mb-4">
+            <label className="flex items-center gap-2 text-sm font-medium text-gray-700 cursor-pointer">
+              <input 
+                type="checkbox" 
+                checked={isNewFlash}
+                onChange={(e) => setIsNewFlash(e.target.checked)}
+                className="rounded border-gray-300 text-primary focus:ring-primary h-4 w-4"
+              />
+              Show "NEW" flashing badge next to this stipend
+            </label>
+          </div>
+
           <div className="mb-6">
             <label className="block text-sm font-medium text-gray-700 mb-1">Upload PDF Document {editingId && '(Leave blank to keep existing)'}</label>
             <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-lg hover:border-primary transition-colors bg-gray-50">
@@ -178,7 +193,7 @@ export default function ManageStipends() {
             {editingId && (
               <button 
                 type="button"
-                onClick={() => { setEditingId(null); setTitle(''); setFile(null); }}
+                onClick={() => { setEditingId(null); setTitle(''); setIsNewFlash(false); setFile(null); }}
                 className="px-6 py-2.5 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors font-medium"
               >
                 Cancel
@@ -209,7 +224,10 @@ export default function ManageStipends() {
               <tbody>
                 {items.map(item => (
                   <tr key={item._id} className="border-b border-gray-50 hover:bg-gray-50/50 transition-colors">
-                    <td className="p-4 font-bold text-gray-900">{item.title}</td>
+                    <td className="p-4 font-bold text-gray-900 flex items-center gap-2">
+                      {item.title}
+                      {item.isNewFlash && <span className="px-2 py-0.5 bg-red-100 text-red-600 text-[10px] font-bold rounded-full animate-pulse">NEW</span>}
+                    </td>
                     <td className="p-4">
                       <a href={item.pdfUrl} target="_blank" rel="noreferrer" className="flex items-center gap-2 text-sm text-blue-600 hover:underline">
                         <Download size={16} /> View PDF

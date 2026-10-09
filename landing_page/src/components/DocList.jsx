@@ -30,8 +30,11 @@ export default function DocList({ items }) {
               <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-secondary text-sm">
                 📄
               </span>
-              <span className="text-sm font-medium text-card-foreground">
+              <span className="text-sm font-medium text-card-foreground flex items-center gap-2 flex-wrap">
                 {item.title}
+                {item.isNewFlash && (
+                  <span className="px-2 py-0.5 bg-red-100 text-red-600 text-[10px] font-bold rounded-full animate-pulse">NEW</span>
+                )}
               </span>
             </span>
             <span className="shrink-0 text-xs font-semibold uppercase tracking-wider text-accent-foreground/80 group-hover:text-foreground">

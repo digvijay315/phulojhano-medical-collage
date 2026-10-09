@@ -8,6 +8,7 @@ const documentSchema = new mongoose.Schema({
     enum: ['student_list', 'syllabus', 'result', 'academic_calendar', 'stipend'], 
     required: true 
   },
+  isNewFlash: { type: Boolean, default: false },
   createdAt: { type: Date, default: Date.now }
 });
 

@@ -12,7 +12,8 @@ export default function Tenders() {
         subject: item.name + (item.subject ? ` - ${item.subject}` : ''),
         start: new Date(item.startDate).toLocaleDateString(),
         end: item.endDate ? new Date(item.endDate).toLocaleDateString() : '',
-        files: item.pdfUrl ? [item.pdfUrl] : []
+        files: item.pdfUrl ? [item.pdfUrl] : [],
+        isNewFlash: item.isNewFlash
       }));
     }
   });
@@ -43,7 +44,10 @@ export default function Tenders() {
               <tbody>
                 {tenders.map((t) => (
                   <tr key={t.id} className="border-t border-border">
-                    <td className="px-5 py-3 font-medium">{t.subject}</td>
+                    <td className="px-5 py-3 font-medium flex items-center gap-2">
+                      {t.subject}
+                      {t.isNewFlash && <span className="px-2 py-0.5 bg-red-100 text-red-600 text-[10px] font-bold rounded-full animate-pulse">NEW</span>}
+                    </td>
                     <td className="px-5 py-3 text-muted-foreground">{t.start}</td>
                     <td className="px-5 py-3 text-muted-foreground">{t.end}</td>
                     <td className="px-5 py-3">
@@ -75,7 +79,10 @@ export default function Tenders() {
                 key={t.id}
                 className="rounded-xl border border-border bg-card p-5"
               >
-                <p className="text-sm font-semibold">{t.subject}</p>
+                <p className="text-sm font-semibold flex items-center gap-2 flex-wrap">
+                  {t.subject}
+                  {t.isNewFlash && <span className="px-2 py-0.5 bg-red-100 text-red-600 text-[10px] font-bold rounded-full animate-pulse">NEW</span>}
+                </p>
                 <p className="mt-1 text-xs text-muted-foreground">
                   {t.start} – {t.end}
                 </p>

@@ -4,8 +4,8 @@ const cloudinary = require('cloudinary').v2;
 // Create
 const createTender = async (req, res) => {
   try {
-    const { name, subject, startDate, endDate, pdfUrl } = req.body;
-    const newTender = new Tender({ name, subject, startDate, endDate, pdfUrl });
+    const { name, subject, startDate, endDate, pdfUrl, isNewFlash } = req.body;
+    const newTender = new Tender({ name, subject, startDate, endDate, pdfUrl, isNewFlash: isNewFlash === true || isNewFlash === 'true' });
     await newTender.save();
     res.status(201).json({ success: true, item: newTender });
   } catch (error) {
@@ -41,10 +41,11 @@ const getTenders = async (req, res) => {
 const updateTender = async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, subject, startDate, endDate, pdfUrl } = req.body;
+    const { name, subject, startDate, endDate, pdfUrl, isNewFlash } = req.body;
     
     const updateData = { name, subject, startDate, endDate };
     if (pdfUrl) updateData.pdfUrl = pdfUrl;
+    if (isNewFlash !== undefined) updateData.isNewFlash = isNewFlash === true || isNewFlash === 'true';
 
     const updated = await Tender.findByIdAndUpdate(id, updateData, { new: true });
     res.status(200).json({ success: true, item: updated });

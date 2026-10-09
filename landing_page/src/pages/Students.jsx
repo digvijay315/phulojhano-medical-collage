@@ -8,7 +8,7 @@ export default function Students() {
     queryKey: ['documents', 'student_list'],
     queryFn: async () => {
       const res = await api.get('/documents?category=student_list&limit=100');
-      return res.data.items.map(i => ({ id: i._id, title: i.title, href: i.pdfUrl }));
+      return res.data.items.map(i => ({ id: i._id, title: i.title, href: i.pdfUrl, isNewFlash: i.isNewFlash }));
     }
   });
 
@@ -16,7 +16,7 @@ export default function Students() {
     queryKey: ['documents', 'syllabus'],
     queryFn: async () => {
       const res = await api.get('/documents?category=syllabus&limit=100');
-      return res.data.items.map(i => ({ id: i._id, title: i.title, href: i.pdfUrl }));
+      return res.data.items.map(i => ({ id: i._id, title: i.title, href: i.pdfUrl, isNewFlash: i.isNewFlash }));
     }
   });
 
@@ -24,7 +24,7 @@ export default function Students() {
     queryKey: ['documents', 'result'],
     queryFn: async () => {
       const res = await api.get('/documents?category=result&limit=100');
-      return res.data.items.map(i => ({ id: i._id, title: i.title, href: i.pdfUrl }));
+      return res.data.items.map(i => ({ id: i._id, title: i.title, href: i.pdfUrl, isNewFlash: i.isNewFlash }));
     }
   });
 

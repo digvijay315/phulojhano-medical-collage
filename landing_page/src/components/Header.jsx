@@ -169,8 +169,8 @@ export default function Header() {
         <div className="bg-accent text-accent-foreground">
           <div className="mx-auto max-w-7xl overflow-hidden py-1.5 text-xs font-medium">
             <Marquee speed={40} gradient={false}>
-              <span className="mx-4">Notice: {content.noticeTicker}</span>
-              <span className="mx-4">Notice: {content.noticeTicker}</span>
+              <span className="mx-4">{content.noticeTicker}</span>
+              <span className="mx-4">{content.noticeTicker}</span>
             </Marquee>
           </div>
         </div>

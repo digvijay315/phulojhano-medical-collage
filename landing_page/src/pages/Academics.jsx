@@ -27,7 +27,7 @@ export default function Academics() {
     queryKey: ['documents', 'academic_calendar'],
     queryFn: async () => {
       const res = await api.get('/documents?category=academic_calendar&limit=100');
-      return res.data.items.map(i => ({ id: i._id, title: i.title, href: i.pdfUrl }));
+      return res.data.items.map(i => ({ id: i._id, title: i.title, href: i.pdfUrl, isNewFlash: i.isNewFlash }));
     }
   });
 
@@ -35,7 +35,7 @@ export default function Academics() {
     queryKey: ['documents', 'syllabus'],
     queryFn: async () => {
       const res = await api.get('/documents?category=syllabus&limit=100');
-      return res.data.items.map(i => ({ id: i._id, title: i.title, href: i.pdfUrl }));
+      return res.data.items.map(i => ({ id: i._id, title: i.title, href: i.pdfUrl, isNewFlash: i.isNewFlash }));
     }
   });
 

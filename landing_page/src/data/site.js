@@ -36,6 +36,7 @@ export const nav = [
     children: [
       { label: "Academic Calendar", to: "/academics#calendar" },
       { label: "Syllabus", to: "/academics#syllabus" },
+      { label: "Announcements", to: "/announcements" },
     ],
   },
   {

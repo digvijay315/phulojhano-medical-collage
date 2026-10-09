@@ -13,7 +13,8 @@ export default function Tenders() {
     name: '',
     subject: '',
     startDate: '',
-    endDate: ''
+    endDate: '',
+    isNewFlash: false
   });
   const [file, setFile] = useState(null);
   
@@ -48,7 +49,8 @@ export default function Tenders() {
   }, [page]);
 
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const { name, value, type, checked } = e.target;
+    setFormData({ ...formData, [name]: type === 'checkbox' ? checked : value });
   };
 
   const handleFileChange = (e) => {
@@ -104,7 +106,7 @@ export default function Tenders() {
       }
 
       // Reset form
-      setFormData({ name: '', subject: '', startDate: '', endDate: '' });
+      setFormData({ name: '', subject: '', startDate: '', endDate: '', isNewFlash: false });
       setFile(null);
       setEditingId(null);
       
@@ -140,7 +142,8 @@ export default function Tenders() {
       name: item.name,
       subject: item.subject,
       startDate: item.startDate.split('T')[0], // format for date input
-      endDate: item.endDate.split('T')[0]
+      endDate: item.endDate.split('T')[0],
+      isNewFlash: item.isNewFlash || false
     });
     setFile(null);
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -148,7 +151,7 @@ export default function Tenders() {
 
   const cancelEdit = () => {
     setEditingId(null);
-    setFormData({ name: '', subject: '', startDate: '', endDate: '' });
+    setFormData({ name: '', subject: '', startDate: '', endDate: '', isNewFlash: false });
     setFile(null);
   };
 
@@ -214,6 +217,19 @@ export default function Tenders() {
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none"
               />
             </div>
+          </div>
+
+          <div className="mb-4">
+            <label className="flex items-center gap-2 text-sm font-medium text-gray-700 cursor-pointer">
+              <input 
+                type="checkbox" 
+                name="isNewFlash"
+                checked={formData.isNewFlash}
+                onChange={handleChange}
+                className="rounded border-gray-300 text-primary focus:ring-primary h-4 w-4"
+              />
+              Show "NEW" flashing badge next to this tender
+            </label>
           </div>
 
           <div className="mb-6">
@@ -288,7 +304,10 @@ export default function Tenders() {
                   {items.map(item => (
                     <tr key={item._id} className="border-b border-gray-50 hover:bg-gray-50/50 transition-colors">
                       <td className="p-4">
-                        <p className="font-bold text-gray-800">{item.name}</p>
+                        <p className="font-bold text-gray-800 flex items-center gap-2">
+                          {item.name}
+                          {item.isNewFlash && <span className="px-2 py-0.5 bg-red-100 text-red-600 text-[10px] font-bold rounded-full animate-pulse">NEW</span>}
+                        </p>
                         <p className="text-sm text-gray-600 mt-1">{item.subject}</p>
                       </td>
                       <td className="p-4 text-sm text-gray-600">

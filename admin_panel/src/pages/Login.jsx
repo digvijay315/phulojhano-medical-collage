@@ -41,7 +41,7 @@ export default function Login() {
       {/* Left Side: Image */}
       <div className="hidden lg:block lg:w-1/2 relative bg-primary">
         <img 
-          src="https://dumkamedicalcollege.org/wp-content/uploads/2026/08/IMG_3621.JPG.jpeg" 
+          src="/hospital1.webp" 
           alt="Phulo Jhano Medical College Hospital" 
           className="absolute inset-0 w-full h-full object-cover opacity-60 "
         />

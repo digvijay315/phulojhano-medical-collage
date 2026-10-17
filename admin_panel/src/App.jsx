@@ -15,7 +15,7 @@ import Results from './pages/Results';
 import AcademicCalendar from './pages/AcademicCalendar';
 import HostelFacility from './pages/HostelFacility';
 import Canteen from './pages/Canteen';
-import StaffTeaching from './pages/StaffTeaching';
+import Department from './pages/Department';
 import StaffNonTeaching from './pages/StaffNonTeaching';
 import ManageChatbot from './pages/ManageChatbot';
 import ManageNotices from './pages/ManageNotices';
@@ -47,7 +47,8 @@ function App() {
                 <Route path="academic/results" element={<Results />} />
                 <Route path="students/hostel" element={<HostelFacility />} />
                 <Route path="students/canteen" element={<Canteen />} />
-                <Route path="staff/teaching" element={<StaffTeaching />} />
+                <Route path="department" element={<Department />} />
+                <Route path="staff/teaching" element={<Department />} />
                 <Route path="staff/non-teaching" element={<StaffNonTeaching />} />
                 
                 {/* Catch-all for all other admin routes (Placeholder) */}

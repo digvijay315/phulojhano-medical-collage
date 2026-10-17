@@ -40,12 +40,8 @@ export const nav = [
     ],
   },
   {
-    label: "Staff Section",
+    label: "Department",
     to: "/faculty",
-    children: [
-      { label: "Teaching Staff", to: "/faculty" },
-      { label: "Non-Teaching Staff", to: "/faculty#non-teaching" },
-    ],
   },
   {
     label: "Students",

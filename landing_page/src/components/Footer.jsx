@@ -4,7 +4,7 @@ import { college } from "../data/site";
 const quickLinks = [
   { label: "About the College", to: "/about" },
   { label: "Administration", to: "/administration" },
-  { label: "Teaching Staff", to: "/faculty" },
+  { label: "Departments", to: "/faculty" },
   { label: "Academics", to: "/academics" },
 ];
 

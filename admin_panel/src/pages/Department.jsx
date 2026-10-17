@@ -4,12 +4,55 @@ import { Upload, Loader2, Trash2, Edit2, Image as ImageIcon } from 'lucide-react
 import { useToast } from '../context/ToastContext';
 import { useConfirm } from '../context/ConfirmContext';
 
-export default function StaffTeaching() {
+const DEPARTMENT_DATA = [
+  { name: 'ANATOMY', posts: ['Professor', 'Asso. Prof.', 'Assi. Prof.', 'Tutor'] },
+  { name: 'PHYSIOLOGY', posts: ['Professor', 'Asso. Prof.', 'Assi. Prof.', 'Tutor'] },
+  { name: 'BIOCHEMISTRY', posts: ['Professor', 'Asso. Prof.', 'Assi. Prof.', 'Tutor'] },
+  { name: 'PATHOLOGY', posts: ['Professor', 'Asso. Prof.', 'Assi. Prof.', 'Tutor'] },
+  { name: 'Microbiology', posts: ['Professor', 'Asso. Prof.', 'Assi. Prof.', 'Tutor'] },
+  { name: 'PHARMACOLOGY', posts: ['Professor', 'Asso. Prof.', 'Assi. Prof.', 'Tutor'] },
+  { name: 'F.M.T.', posts: ['Professor', 'Assi. Prof.', 'Tutor'] },
+  { name: 'P.S.M.', posts: ['Professor', 'Asso. Prof.', 'Assi. Prof.', 'Tutor'] },
+  { name: 'MEDICINE', posts: ['Professor', 'Asso. Prof.', 'Assi. Prof.', 'SR'] },
+  { name: 'T.B.&Chest', posts: ['Professor', 'Assi. Prof.', 'SR'] },
+  { name: 'Skin & Vd', posts: ['Asso. Prof.', 'Assi. Prof.', 'SR'] },
+  { name: 'PSYCHIATRY', posts: ['Asso. Prof.', 'Assi. Prof.', 'SR'] },
+  { name: 'PEADIATRICS', posts: ['Professor', 'Asso. Prof.', 'Assi. Prof.', 'SR'] },
+  { name: 'SURGERY', posts: ['Professor', 'Asso. Prof.', 'Assi. Prof.', 'SR'] },
+  { name: 'ORTHOPADIES', posts: ['Professor', 'Asso. Prof.', 'Assi. Prof.', 'SR'] },
+  { name: 'ENT', posts: ['Professor', 'Asso. Prof.', 'Assi. Prof.', 'SR'] },
+  { name: 'EYE', posts: ['Professor', 'Asso. Prof.', 'Assi. Prof.', 'SR'] },
+  { name: 'OBS & GYN', posts: ['Professor', 'Asso. Prof.', 'Assi. Prof.', 'SR'] },
+  { name: 'Radio-Diagnosis', posts: ['Professor', 'Asso. Prof.', 'Assi. Prof.', 'SR'] },
+  { name: 'Radio Therapy', posts: ['Professor', 'Asso. Prof.', 'Assi. Prof.', 'Tutor'] },
+  { name: 'Anesthes-iology', posts: ['Professor', 'Asso. Prof.', 'Assi. Prof.', 'SR'] },
+  { name: 'Physical Medicine and rehabilitation', posts: ['Professor', 'Assi. Prof.', 'SR'] },
+  { name: 'Blood Bank', posts: ['Professor', 'Assi. Prof.'] },
+  { name: 'Dentistry', posts: ['Professor', 'Asso. Prof.', 'Assi. Prof.', 'SR'] },
+];
+
+const getAvailablePosts = (dept) => {
+  if (!dept) return [];
+  const clean = dept.trim().toLowerCase();
+  const stripped = dept.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
+
+  const found = DEPARTMENT_DATA.find(d => {
+    const dClean = d.name.toLowerCase();
+    const dStripped = d.name.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
+    return dClean === clean || dStripped === stripped;
+  });
+
+  return found ? found.posts : [];
+};
+
+export default function Department() {
   const [deletingId, setDeletingId] = useState(null);
   const [formData, setFormData] = useState({
     name: '',
+    department: '',
     post: '',
-    department: ''
+    qualification: '',
+    email: ''
   });
   const [file, setFile] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -24,6 +67,8 @@ export default function StaffTeaching() {
   
   const { addToast } = useToast();
   const { confirm } = useConfirm();
+
+  const availablePosts = getAvailablePosts(formData.department);
 
   const fetchItems = async (currentPage) => {
     setFetching(true);
@@ -49,6 +94,16 @@ export default function StaffTeaching() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  const handleDepartmentChange = (e) => {
+    const selectedDept = e.target.value;
+    const posts = getAvailablePosts(selectedDept);
+    setFormData(prev => ({
+      ...prev,
+      department: selectedDept,
+      post: posts.includes(prev.post) ? prev.post : ''
+    }));
+  };
+
   const handleFileChange = (e) => {
     const selected = e.target.files[0];
     if (selected) {
@@ -58,8 +113,8 @@ export default function StaffTeaching() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!formData.name || !formData.post || !formData.department) {
-      addToast('Name, Post, and Department are required fields.', 'error');
+    if (!formData.name || !formData.department || !formData.post) {
+      addToast('Name, Department, and Post are required fields.', 'error');
       return;
     }
 
@@ -94,7 +149,7 @@ export default function StaffTeaching() {
         addToast('Staff profile added successfully!', 'success');
       }
 
-      setFormData({ name: '', post: '', department: '' });
+      setFormData({ name: '', department: '', post: '', qualification: '', email: '' });
       setFile(null);
       setEditingId(null);
       fetchItems(page);
@@ -131,9 +186,11 @@ export default function StaffTeaching() {
   const handleEdit = (item) => {
     setEditingId(item._id);
     setFormData({
-      name: item.name,
-      post: item.post,
-      department: item.department
+      name: item.name || '',
+      department: item.department || '',
+      post: item.post || '',
+      qualification: item.qualification || '',
+      email: item.email || ''
     });
     setFile(null);
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -141,15 +198,15 @@ export default function StaffTeaching() {
 
   const cancelEdit = () => {
     setEditingId(null);
-    setFormData({ name: '', post: '', department: '' });
+    setFormData({ name: '', department: '', post: '', qualification: '', email: '' });
     setFile(null);
   };
 
   return (
     <div className="p-6 max-w-5xl mx-auto space-y-10">
       <div>
-        <h1 className="text-3xl font-bold font-serif">Teaching Staff</h1>
-        <p className="text-muted-foreground mt-1">Manage profiles of professors, doctors, and academic instructors.</p>
+        <h1 className="text-3xl font-bold font-serif">Department (Teaching Staff)</h1>
+        <p className="text-muted-foreground mt-1">Manage department faculty, professors, and academic instructors.</p>
       </div>
 
       <div>
@@ -158,7 +215,7 @@ export default function StaffTeaching() {
         <form onSubmit={handleSubmit} className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
             <div className="space-y-1 md:col-span-2">
-              <label className="text-sm font-medium text-gray-700">Full Name</label>
+              <label className="text-sm font-medium text-gray-700">Full Name *</label>
               <input 
                 type="text" 
                 name="name"
@@ -166,28 +223,72 @@ export default function StaffTeaching() {
                 onChange={handleChange}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none"
                 placeholder="e.g. Dr. Rajesh Kumar"
+                required
               />
             </div>
+
             <div className="space-y-1">
-              <label className="text-sm font-medium text-gray-700">Designation / Post</label>
-              <input 
-                type="text" 
+              <label className="text-sm font-medium text-gray-700">Department *</label>
+              <select 
+                name="department"
+                value={formData.department}
+                onChange={handleDepartmentChange}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none bg-white text-gray-800"
+                required
+              >
+                <option value="">-- Select Department --</option>
+                {DEPARTMENT_DATA.map(d => (
+                  <option key={d.name} value={d.name}>{d.name}</option>
+                ))}
+                {formData.department && !DEPARTMENT_DATA.some(d => d.name === formData.department) && (
+                  <option value={formData.department}>{formData.department}</option>
+                )}
+              </select>
+            </div>
+
+            <div className="space-y-1">
+              <label className="text-sm font-medium text-gray-700">Designation / Post *</label>
+              <select 
                 name="post"
                 value={formData.post}
                 onChange={handleChange}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none"
-                placeholder="e.g. Professor & HOD"
-              />
+                disabled={!formData.department}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none bg-white text-gray-800 disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed"
+                required
+              >
+                <option value="">
+                  {formData.department ? '-- Select Designation / Post --' : '-- Select Department First --'}
+                </option>
+                {availablePosts.map(post => (
+                  <option key={post} value={post}>{post}</option>
+                ))}
+                {formData.post && !availablePosts.includes(formData.post) && (
+                  <option value={formData.post}>{formData.post}</option>
+                )}
+              </select>
             </div>
+
             <div className="space-y-1">
-              <label className="text-sm font-medium text-gray-700">Department</label>
+              <label className="text-sm font-medium text-gray-700">Qualification (Optional)</label>
               <input 
                 type="text" 
-                name="department"
-                value={formData.department}
+                name="qualification"
+                value={formData.qualification}
                 onChange={handleChange}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none"
-                placeholder="e.g. Anatomy"
+                placeholder="e.g. MBBS, MD (Anatomy)"
+              />
+            </div>
+
+            <div className="space-y-1">
+              <label className="text-sm font-medium text-gray-700">Email ID (Optional)</label>
+              <input 
+                type="email" 
+                name="email"
+                value={formData.email}
+                onChange={handleChange}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none"
+                placeholder="e.g. dr.rajesh@phulojhanomc.edu.in"
               />
             </div>
           </div>
@@ -243,8 +344,10 @@ export default function StaffTeaching() {
                 <tr className="bg-gray-50 border-b border-gray-100">
                   <th className="p-4 font-medium text-gray-600">Photo</th>
                   <th className="p-4 font-medium text-gray-600">Name</th>
-                  <th className="p-4 font-medium text-gray-600">Designation</th>
                   <th className="p-4 font-medium text-gray-600">Department</th>
+                  <th className="p-4 font-medium text-gray-600">Designation</th>
+                  <th className="p-4 font-medium text-gray-600">Qualification</th>
+                  <th className="p-4 font-medium text-gray-600">Email</th>
                   <th className="p-4 font-medium text-gray-600 text-right">Actions</th>
                 </tr>
               </thead>
@@ -261,8 +364,10 @@ export default function StaffTeaching() {
                       )}
                     </td>
                     <td className="p-4 font-medium text-gray-800">{item.name}</td>
+                    <td className="p-4 text-gray-700 font-medium">{item.department}</td>
                     <td className="p-4 text-primary">{item.post}</td>
-                    <td className="p-4 text-gray-600">{item.department}</td>
+                    <td className="p-4 text-gray-600 text-sm">{item.qualification || '-'}</td>
+                    <td className="p-4 text-gray-600 text-sm">{item.email || '-'}</td>
                     <td className="p-4">
                       <div className="flex justify-end gap-2">
                         <button onClick={() => handleEdit(item)} className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" title="Edit"><Edit2 size={18} /></button>

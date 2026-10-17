@@ -2,8 +2,10 @@ const mongoose = require('mongoose');
 
 const staffSchema = new mongoose.Schema({
   name: { type: String, required: true },
-  post: { type: String, required: true },
   department: { type: String, required: true },
+  post: { type: String, required: true },
+  qualification: { type: String, default: '' },
+  email: { type: String, default: '' },
   imageUrl: { type: String }, // Optional staff photo
   type: { 
     type: String, 

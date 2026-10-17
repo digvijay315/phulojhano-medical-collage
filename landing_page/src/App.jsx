@@ -31,6 +31,7 @@ export default function App() {
             <Route path="/administration" element={<Administration />} />
             <Route path="/contact" element={<Contact />} />
             <Route path="/faculty" element={<Faculty />} />
+            <Route path="/department" element={<Faculty />} />
             <Route path="/gallery" element={<Gallery />} />
             <Route path="/recruitment" element={<Recruitment />} />
             <Route path="/stipends" element={<Stipends />} />

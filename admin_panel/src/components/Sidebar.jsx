@@ -2,13 +2,14 @@ import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { 
   LayoutDashboard, FileText, Image, LogOut, 
-  Briefcase, Bell, IndianRupee, Users, 
+  Bell, IndianRupee, Users, 
   GraduationCap, Building, Info, ChevronDown, ChevronRight
 } from 'lucide-react';
 
 const SidebarGroup = ({ title, icon, items, location }) => {
-  const [isOpen, setIsOpen] = useState(false);
-  const isActive = items.some(item => location.pathname === item.path);
+  const isAnyChildActive = items.some(item => location.pathname === item.path);
+  const [isOpen, setIsOpen] = useState(isAnyChildActive);
+  const isActive = isAnyChildActive;
 
   return (
     <div className="mb-2">
@@ -49,8 +50,27 @@ const SidebarGroup = ({ title, icon, items, location }) => {
 export default function Sidebar() {
   const location = useLocation();
 
-  const groups = [
+  const navItems = [
     {
+      type: 'link',
+      name: 'Dashboard',
+      path: '/',
+      icon: <LayoutDashboard size={20} />
+    },
+    {
+      type: 'link',
+      name: 'Global Site Content',
+      path: '/content',
+      icon: <FileText size={20} />
+    },
+    {
+      type: 'link',
+      name: 'Chatbot Q&A',
+      path: '/chatbot',
+      icon: <Bell size={20} />
+    },
+    {
+      type: 'group',
       title: 'About Us',
       icon: <Info size={20} />,
       items: [
@@ -60,6 +80,7 @@ export default function Sidebar() {
       ]
     },
     {
+      type: 'group',
       title: 'Academics',
       icon: <GraduationCap size={20} />,
       items: [
@@ -69,14 +90,14 @@ export default function Sidebar() {
       ]
     },
     {
-      title: 'Staff Section',
-      icon: <Users size={20} />,
-      items: [
-        { name: 'Teaching Staff', path: '/staff/teaching' },
-        { name: 'Non-Teaching Staff', path: '/staff/non-teaching' },
-      ]
+      type: 'link',
+      name: 'Department',
+      path: '/department',
+      altPaths: ['/staff/teaching'],
+      icon: <Building size={20} />
     },
     {
+      type: 'group',
       title: 'Students',
       icon: <Users size={20} />,
       items: [
@@ -86,6 +107,7 @@ export default function Sidebar() {
       ]
     },
     {
+      type: 'group',
       title: 'Notices & Tenders',
       icon: <Bell size={20} />,
       items: [
@@ -94,6 +116,7 @@ export default function Sidebar() {
       ]
     },
     {
+      type: 'group',
       title: 'Gallery Media',
       icon: <Image size={20} />,
       items: [
@@ -101,6 +124,12 @@ export default function Sidebar() {
         { name: 'Video Gallery', path: '/gallery/videos' },
       ]
     },
+    {
+      type: 'link',
+      name: 'Stipends',
+      path: '/stipends',
+      icon: <IndianRupee size={20} />
+    }
   ];
 
   const handleLogout = () => {
@@ -119,63 +148,37 @@ export default function Sidebar() {
       </div>
       
       <nav className="flex-1 overflow-y-auto p-4 custom-scrollbar">
-        <Link
-          to="/"
-          className={`flex items-center gap-3 px-4 py-3 mb-2 rounded-lg transition-colors ${
-            location.pathname === '/' 
-              ? 'bg-accent text-accent-foreground' 
-              : 'hover:bg-primary-foreground/10 text-primary-foreground/90'
-          }`}
-        >
-          <LayoutDashboard size={20} />
-          <span className="font-medium">Dashboard</span>
-        </Link>
-        
-        <Link
-          to="/content"
-          className={`flex items-center gap-3 px-4 py-3 mb-4 rounded-lg transition-colors ${
-            location.pathname === '/content' 
-              ? 'bg-accent text-accent-foreground' 
-              : 'hover:bg-primary-foreground/10 text-primary-foreground/90'
-          }`}
-        >
-          <FileText size={20} />
-          <span className="font-medium">Global Site Content</span>
-        </Link>
-        
-        <Link
-          to="/chatbot"
-          className={`flex items-center gap-3 px-4 py-3 mb-4 rounded-lg transition-colors ${
-            location.pathname === '/chatbot' 
-              ? 'bg-accent text-accent-foreground' 
-              : 'hover:bg-primary-foreground/10 text-primary-foreground/90'
-          }`}
-        >
-          <Bell size={20} />
-          <span className="font-medium">Chatbot Q&A</span>
-        </Link>
-        
-        {groups.map((group) => (
-          <SidebarGroup 
-            key={group.title} 
-            title={group.title} 
-            icon={group.icon} 
-            items={group.items} 
-            location={location} 
-          />
-        ))}
+        {navItems.map((item) => {
+          if (item.type === 'group') {
+            return (
+              <SidebarGroup 
+                key={item.title} 
+                title={item.title} 
+                icon={item.icon} 
+                items={item.items} 
+                location={location} 
+              />
+            );
+          }
+          
+          const isItemActive = location.pathname === item.path || 
+            (item.altPaths && item.altPaths.includes(location.pathname));
 
-        <Link
-          to="/stipends"
-          className={`flex items-center gap-3 px-4 py-3 mt-2 rounded-lg transition-colors ${
-            location.pathname === '/stipends' 
-              ? 'bg-accent text-accent-foreground' 
-              : 'hover:bg-primary-foreground/10 text-primary-foreground/90'
-          }`}
-        >
-          <IndianRupee size={20} />
-          <span className="font-medium">Stipends</span>
-        </Link>
+          return (
+            <Link
+              key={item.name}
+              to={item.path}
+              className={`flex items-center gap-3 px-4 py-2.5 mb-2 rounded-lg transition-colors ${
+                isItemActive
+                  ? 'bg-accent text-accent-foreground font-medium' 
+                  : 'hover:bg-primary-foreground/10 text-primary-foreground/90'
+              }`}
+            >
+              {item.icon}
+              <span className="font-medium">{item.name}</span>
+            </Link>
+          );
+        })}
       </nav>
 
       <div className="p-4 border-t border-primary-foreground/10 shrink-0">

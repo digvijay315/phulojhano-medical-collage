@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import api from "../api";
 import PageHeader from "../components/PageHeader";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 
 export default function Faculty() {
   const [query, setQuery] = useState("");
@@ -16,6 +18,7 @@ export default function Faculty() {
   const [totalPages, setTotalPages] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [exporting, setExporting] = useState(false);
   
   const pageSize = 12;
 
@@ -100,6 +103,145 @@ export default function Faculty() {
     window.scrollTo({ top: 380, behavior: "smooth" });
   };
 
+  const handleExportPDF = async () => {
+    if (exporting) return;
+    setExporting(true);
+
+    try {
+      // Fetch all matching faculty records from the server
+      const params = new URLSearchParams({
+        type: "teaching",
+        limit: "1000",
+      });
+      if (debouncedQuery.trim()) params.append("search", debouncedQuery.trim());
+      if (selectedDept) params.append("department", selectedDept);
+      if (selectedPost) params.append("post", selectedPost);
+
+      const res = await api.get(`/staff?${params.toString()}`);
+      const dataToExport = (res.data && res.data.items) ? res.data.items : faculty;
+
+      if (!dataToExport || dataToExport.length === 0) {
+        alert("No faculty records found to export.");
+        return;
+      }
+
+      const doc = new jsPDF({
+        orientation: "portrait",
+        unit: "mm",
+        format: "a4",
+      });
+
+      const primaryColor = [22, 78, 99]; // Theme dark teal / navy
+      const darkColor = [30, 41, 59];
+
+      // College Title & Subtitle Header
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(15);
+      doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+      doc.text("PHULO JHANO MEDICAL COLLEGE & HOSPITAL", 105, 15, { align: "center" });
+
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(10);
+      doc.setTextColor(darkColor[0], darkColor[1], darkColor[2]);
+      doc.text("Dumka, Jharkhand - 814101", 105, 21, { align: "center" });
+
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(11);
+      doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+      doc.text("FACULTY & TEACHING STAFF DIRECTORY", 105, 28, { align: "center" });
+
+      // Metadata line
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(8.5);
+      doc.setTextColor(100, 116, 139);
+      const todayStr = new Date().toLocaleDateString("en-IN", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+      });
+      
+      const filterLabel = selectedDept ? `Department: ${selectedDept.toUpperCase()}` : "All Departments";
+      doc.text(`Generated On: ${todayStr} | Filter: ${filterLabel} | Total Members: ${dataToExport.length}`, 14, 34);
+
+      // Horizontal separator line
+      doc.setDrawColor(203, 213, 225);
+      doc.setLineWidth(0.5);
+      doc.line(14, 36, 196, 36);
+
+      // Format Table Rows
+      const tableRows = dataToExport.map((f, index) => {
+        const postWithHod = f.isHod && !/HOD/i.test(f.post || "")
+          ? `${f.post || "-"} (HOD)`
+          : (f.post || "-");
+
+        return [
+          index + 1,
+          f.name || "-",
+          (f.department || "-").toUpperCase(),
+          postWithHod,
+          f.qualification || "-",
+          f.email || "-",
+        ];
+      });
+
+      // Render Table with autoTable
+      autoTable(doc, {
+        startY: 39,
+        head: [["#", "Doctor / Faculty Name", "Department", "Designation", "Qualification", "Email ID"]],
+        body: tableRows,
+        theme: "striped",
+        headStyles: {
+          fillColor: [22, 78, 99],
+          textColor: [255, 255, 255],
+          fontStyle: "bold",
+          fontSize: 8.5,
+          halign: "left",
+        },
+        bodyStyles: {
+          fontSize: 8,
+          textColor: [30, 41, 59],
+          cellPadding: 2.5,
+        },
+        alternateRowStyles: {
+          fillColor: [248, 250, 252],
+        },
+        columnStyles: {
+          0: { cellWidth: 10, halign: "center" },
+          1: { cellWidth: 46, fontStyle: "bold" },
+          2: { cellWidth: 34 },
+          3: { cellWidth: 32 },
+          4: { cellWidth: 32 },
+          5: { cellWidth: 32 },
+        },
+        margin: { top: 15, right: 14, bottom: 18, left: 14 },
+        didDrawPage: (data) => {
+          const pageCount = doc.internal.getNumberOfPages();
+          doc.setFontSize(8);
+          doc.setTextColor(148, 163, 184);
+          doc.text(
+            "Phulo Jhano Medical College & Hospital, Dumka | Official Faculty Directory",
+            14,
+            doc.internal.pageSize.height - 10
+          );
+          doc.text(
+            `Page ${data.pageNumber} of ${pageCount}`,
+            doc.internal.pageSize.width - 14,
+            doc.internal.pageSize.height - 10,
+            { align: "right" }
+          );
+        },
+      });
+
+      const deptSlug = selectedDept ? `_${selectedDept.replace(/[^a-zA-Z0-9]/g, "_")}` : "";
+      doc.save(`Phulo_Jhano_Medical_College_Faculty_List${deptSlug}.pdf`);
+    } catch (err) {
+      console.error("PDF Export Error:", err);
+      alert("Failed to export PDF. Please try again.");
+    } finally {
+      setExporting(false);
+    }
+  };
+
   const startItem = totalItems === 0 ? 0 : (page - 1) * pageSize + 1;
   const endItem = Math.min(page * pageSize, totalItems);
 
@@ -136,7 +278,7 @@ export default function Faculty() {
                 <option value="">All Departments ({departments.length})</option>
                 {departments.map((dept) => (
                   <option key={dept} value={dept}>
-                    {dept}
+                    {dept.toUpperCase()}
                   </option>
                 ))}
               </select>
@@ -172,15 +314,39 @@ export default function Faculty() {
               faculty members
             </div>
 
-            {hasActiveFilters && (
+            <div className="flex items-center gap-4">
+              {hasActiveFilters && (
+                <button
+                  type="button"
+                  onClick={resetFilters}
+                  className="text-primary hover:underline font-medium cursor-pointer"
+                >
+                  Clear all filters
+                </button>
+              )}
+
               <button
                 type="button"
-                onClick={resetFilters}
-                className="text-primary hover:underline font-medium cursor-pointer"
+                onClick={handleExportPDF}
+                disabled={exporting || totalItems === 0}
+                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-primary text-primary-foreground text-xs font-semibold hover:bg-primary/90 transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                title="Download full faculty directory list as PDF"
               >
-                Clear all filters
+                {exporting ? (
+                  <>
+                    <div className="w-3.5 h-3.5 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin" />
+                    <span>Exporting PDF...</span>
+                  </>
+                ) : (
+                  <>
+                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    <span>Export to PDF</span>
+                  </>
+                )}
               </button>
-            )}
+            </div>
           </div>
         </div>
 
@@ -189,7 +355,8 @@ export default function Faculty() {
           <table className="w-full min-w-[640px] text-left text-sm">
             <thead className="bg-muted text-xs uppercase tracking-wider text-muted-foreground">
               <tr>
-                <th className="px-5 py-3.5 w-16">Photo</th>
+                <th className="px-4 py-3.5 w-14 text-center">#</th>
+                <th className="px-5 py-3.5 w-24">Photo</th>
                 <th className="px-5 py-3.5">Name & Qualification</th>
                 <th className="px-5 py-3.5">Department</th>
                 <th className="px-5 py-3.5">Designation / Post</th>
@@ -201,7 +368,7 @@ export default function Faculty() {
                 <tr>
                   <td
                     className="px-5 py-12 text-center text-muted-foreground"
-                    colSpan={5}
+                    colSpan={6}
                   >
                     <div className="inline-block h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent mr-2 align-middle" />
                     Loading faculty directory...
@@ -211,7 +378,7 @@ export default function Faculty() {
                 <tr>
                   <td
                     className="px-5 py-12 text-center text-muted-foreground"
-                    colSpan={5}
+                    colSpan={6}
                   >
                     No matching faculty profiles found.
                     {hasActiveFilters && (
@@ -228,20 +395,32 @@ export default function Faculty() {
                   </td>
                 </tr>
               ) : (
-                faculty.map((f) => (
+                faculty.map((f, index) => (
                   <tr
                     key={f._id}
                     className="border-t border-border hover:bg-muted/30 transition-colors"
                   >
+                    <td className="px-4 py-3.5 text-center">
+                      {f.order && f.order > 0 ? (
+                        <span className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-primary/10 text-primary font-bold text-xs border border-primary/20 shadow-2xs">
+                          #{f.order}
+                        </span>
+                      ) : (
+                        <span className="text-muted-foreground/50 text-xs font-medium">
+                          {(page - 1) * pageSize + index + 1}
+                        </span>
+                      )}
+                    </td>
                     <td className="px-5 py-3.5">
                       {f.imageUrl ? (
                         <img
                           src={f.imageUrl}
                           alt={f.name}
-                          className="w-11 h-11 rounded-full object-cover border border-border"
+                          className="w-16 h-16 sm:w-20 sm:h-20 rounded-full object-cover border-2 border-border shadow-sm shrink-0"
+                          loading="lazy"
                         />
                       ) : (
-                        <div className="w-11 h-11 rounded-full bg-primary/10 flex items-center justify-center border border-primary/20 text-primary font-bold text-sm">
+                        <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-primary/10 flex items-center justify-center border-2 border-primary/20 text-primary font-bold text-lg sm:text-xl shrink-0">
                           {f.name ? f.name.replace(/^Dr\.\s*/i, "").charAt(0).toUpperCase() : "?"}
                         </div>
                       )}
@@ -257,12 +436,17 @@ export default function Faculty() {
                       )}
                     </td>
                     <td className="px-5 py-3.5">
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-muted text-foreground">
-                        {f.department}
+                      <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-muted text-foreground uppercase tracking-wider">
+                        {f.department ? f.department.toUpperCase() : ""}
                       </span>
                     </td>
                     <td className="px-5 py-3.5 text-primary font-medium">
-                      {f.post}
+                      <span>{f.post}</span>
+                      {f.isHod && (
+                        <span className="ml-1.5 inline-block font-bold text-amber-700 bg-amber-50 border border-amber-300 px-1.5 py-0.5 rounded text-xs">
+                          (HOD)
+                        </span>
+                      )}
                     </td>
                     <td className="px-5 py-3.5 text-muted-foreground text-xs">
                       {f.email ? (

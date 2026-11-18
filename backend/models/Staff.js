@@ -7,6 +7,8 @@ const staffSchema = new mongoose.Schema({
   qualification: { type: String, default: '' },
   email: { type: String, default: '' },
   imageUrl: { type: String }, // Optional staff photo
+  order: { type: Number, default: 0 },
+  isHod: { type: Boolean, default: false },
   type: { 
     type: String, 
     enum: ['teaching', 'non-teaching'], 

@@ -1,35 +1,35 @@
 import { useState, useEffect } from 'react';
 import api from '../api';
-import { Upload, Loader2, Trash2, Edit2, Image as ImageIcon } from 'lucide-react';
+import { Upload, Loader2, Trash2, Edit2, Image as ImageIcon, Search, Crown } from 'lucide-react';
 import { useToast } from '../context/ToastContext';
 import { useConfirm } from '../context/ConfirmContext';
 
 const DEPARTMENT_DATA = [
-  { name: 'ANATOMY', posts: ['Professor', 'Asso. Prof.', 'Assi. Prof.', 'Tutor'] },
-  { name: 'PHYSIOLOGY', posts: ['Professor', 'Asso. Prof.', 'Assi. Prof.', 'Tutor'] },
-  { name: 'BIOCHEMISTRY', posts: ['Professor', 'Asso. Prof.', 'Assi. Prof.', 'Tutor'] },
-  { name: 'PATHOLOGY', posts: ['Professor', 'Asso. Prof.', 'Assi. Prof.', 'Tutor'] },
-  { name: 'Microbiology', posts: ['Professor', 'Asso. Prof.', 'Assi. Prof.', 'Tutor'] },
-  { name: 'PHARMACOLOGY', posts: ['Professor', 'Asso. Prof.', 'Assi. Prof.', 'Tutor'] },
-  { name: 'F.M.T.', posts: ['Professor', 'Assi. Prof.', 'Tutor'] },
-  { name: 'P.S.M.', posts: ['Professor', 'Asso. Prof.', 'Assi. Prof.', 'Tutor'] },
-  { name: 'MEDICINE', posts: ['Professor', 'Asso. Prof.', 'Assi. Prof.', 'SR'] },
-  { name: 'T.B.&Chest', posts: ['Professor', 'Assi. Prof.', 'SR'] },
-  { name: 'Skin & Vd', posts: ['Asso. Prof.', 'Assi. Prof.', 'SR'] },
-  { name: 'PSYCHIATRY', posts: ['Asso. Prof.', 'Assi. Prof.', 'SR'] },
-  { name: 'PEADIATRICS', posts: ['Professor', 'Asso. Prof.', 'Assi. Prof.', 'SR'] },
-  { name: 'SURGERY', posts: ['Professor', 'Asso. Prof.', 'Assi. Prof.', 'SR'] },
-  { name: 'ORTHOPADIES', posts: ['Professor', 'Asso. Prof.', 'Assi. Prof.', 'SR'] },
-  { name: 'ENT', posts: ['Professor', 'Asso. Prof.', 'Assi. Prof.', 'SR'] },
-  { name: 'EYE', posts: ['Professor', 'Asso. Prof.', 'Assi. Prof.', 'SR'] },
-  { name: 'OBS & GYN', posts: ['Professor', 'Asso. Prof.', 'Assi. Prof.', 'SR'] },
-  { name: 'Radio-Diagnosis', posts: ['Professor', 'Asso. Prof.', 'Assi. Prof.', 'SR'] },
-  { name: 'Radio Therapy', posts: ['Professor', 'Asso. Prof.', 'Assi. Prof.', 'Tutor'] },
-  { name: 'Anesthes-iology', posts: ['Professor', 'Asso. Prof.', 'Assi. Prof.', 'SR'] },
-  { name: 'Physical Medicine and rehabilitation', posts: ['Professor', 'Assi. Prof.', 'SR'] },
-  { name: 'Blood Bank', posts: ['Professor', 'Assi. Prof.'] },
-  { name: 'Dentistry', posts: ['Professor', 'Asso. Prof.', 'Assi. Prof.', 'SR'] },
-];
+  { name: 'ANATOMY', posts: ['Assi. Prof.', 'Asso. Prof.', 'Professor', 'Tutor'] },
+  { name: 'Anesthes-iology', posts: ['Assi. Prof.', 'Asso. Prof.', 'Professor', 'SR'] },
+  { name: 'BIOCHEMISTRY', posts: ['Assi. Prof.', 'Asso. Prof.', 'Professor', 'Tutor'] },
+  { name: 'Blood Bank', posts: ['Assi. Prof.', 'Professor'] },
+  { name: 'Dentistry', posts: ['Assi. Prof.', 'Asso. Prof.', 'Professor', 'SR'] },
+  { name: 'ENT', posts: ['Assi. Prof.', 'Asso. Prof.', 'Professor', 'SR'] },
+  { name: 'EYE', posts: ['Assi. Prof.', 'Asso. Prof.', 'Professor', 'SR'] },
+  { name: 'F.M.T.', posts: ['Assi. Prof.', 'Professor', 'Tutor'] },
+  { name: 'MEDICINE', posts: ['Assi. Prof.', 'Asso. Prof.', 'Professor', 'SR'] },
+  { name: 'Microbiology', posts: ['Assi. Prof.', 'Asso. Prof.', 'Professor', 'Tutor'] },
+  { name: 'OBS & GYN', posts: ['Assi. Prof.', 'Asso. Prof.', 'Professor', 'SR'] },
+  { name: 'ORTHOPADIES', posts: ['Assi. Prof.', 'Asso. Prof.', 'Professor', 'SR'] },
+  { name: 'P.S.M.', posts: ['Assi. Prof.', 'Asso. Prof.', 'Professor', 'Tutor'] },
+  { name: 'PATHOLOGY', posts: ['Assi. Prof.', 'Asso. Prof.', 'Professor', 'Tutor'] },
+  { name: 'PEADIATRICS', posts: ['Assi. Prof.', 'Asso. Prof.', 'Professor', 'SR'] },
+  { name: 'PHARMACOLOGY', posts: ['Assi. Prof.', 'Asso. Prof.', 'Professor', 'Tutor'] },
+  { name: 'Physical Medicine and rehabilitation', posts: ['Assi. Prof.', 'Professor', 'SR'] },
+  { name: 'PHYSIOLOGY', posts: ['Assi. Prof.', 'Asso. Prof.', 'Professor', 'Tutor'] },
+  { name: 'PSYCHIATRY', posts: ['Assi. Prof.', 'Asso. Prof.', 'SR'] },
+  { name: 'Radio Therapy', posts: ['Assi. Prof.', 'Asso. Prof.', 'Professor', 'Tutor'] },
+  { name: 'Radio-Diagnosis', posts: ['Assi. Prof.', 'Asso. Prof.', 'Professor', 'SR'] },
+  { name: 'Skin & Vd', posts: ['Assi. Prof.', 'Asso. Prof.', 'SR'] },
+  { name: 'SURGERY', posts: ['Assi. Prof.', 'Asso. Prof.', 'Professor', 'SR'] },
+  { name: 'T.B.&Chest', posts: ['Assi. Prof.', 'Professor', 'SR'] },
+].sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }));
 
 const getAvailablePosts = (dept) => {
   if (!dept) return [];
@@ -42,7 +42,7 @@ const getAvailablePosts = (dept) => {
     return dClean === clean || dStripped === stripped;
   });
 
-  return found ? found.posts : [];
+  return found ? [...found.posts].sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' })) : [];
 };
 
 export default function Department() {
@@ -52,7 +52,9 @@ export default function Department() {
     department: '',
     post: '',
     qualification: '',
-    email: ''
+    email: '',
+    order: '',
+    isHod: false
   });
   const [file, setFile] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -60,8 +62,17 @@ export default function Department() {
   const [items, setItems] = useState([]);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
   const [fetching, setFetching] = useState(false);
   
+  // Filter States
+  const [searchQuery, setSearchQuery] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
+  const [filterDept, setFilterDept] = useState('');
+  const [filterPost, setFilterPost] = useState('');
+  const [deptList, setDeptList] = useState([]);
+  const [postList, setPostList] = useState([]);
+
   const [editingId, setEditingId] = useState(null);
   const staffType = 'teaching';
   
@@ -70,14 +81,39 @@ export default function Department() {
 
   const availablePosts = getAvailablePosts(formData.department);
 
-  const fetchItems = async (currentPage) => {
+  // Debounce search query
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchQuery);
+    }, 350);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
+  // Reset to page 1 on filter changes
+  useEffect(() => {
+    setPage(1);
+  }, [debouncedSearch, filterDept, filterPost]);
+
+  const fetchItems = async (currentPage = page) => {
     setFetching(true);
     try {
-      const res = await api.get(`/staff?type=${staffType}&page=${currentPage}&limit=12`);
+      const params = new URLSearchParams({
+        type: staffType,
+        page: String(currentPage),
+        limit: '12',
+      });
+      if (debouncedSearch.trim()) params.append('search', debouncedSearch.trim());
+      if (filterDept) params.append('department', filterDept);
+      if (filterPost) params.append('post', filterPost);
+
+      const res = await api.get(`/staff?${params.toString()}`);
       if (res.data.success) {
         setItems(res.data.items);
-        setTotalPages(res.data.totalPages);
-        setPage(res.data.currentPage);
+        setTotalPages(res.data.totalPages || 1);
+        setPage(res.data.currentPage || 1);
+        setTotalItems(res.data.totalItems || 0);
+        if (res.data.departments?.length) setDeptList(res.data.departments);
+        if (res.data.posts?.length) setPostList(res.data.posts);
       }
     } catch (error) {
       console.error("Failed to fetch staff", error);
@@ -88,7 +124,17 @@ export default function Department() {
 
   useEffect(() => {
     fetchItems(page);
-  }, [page]);
+  }, [page, debouncedSearch, filterDept, filterPost]);
+
+  const hasActiveFilters = Boolean(searchQuery || filterDept || filterPost);
+
+  const resetFilters = () => {
+    setSearchQuery('');
+    setDebouncedSearch('');
+    setFilterDept('');
+    setFilterPost('');
+    setPage(1);
+  };
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -138,7 +184,13 @@ export default function Department() {
         }
       }
 
-      const payload = { ...formData, type: staffType };
+      const orderNumber = formData.order !== '' ? Number(formData.order) : 0;
+      const payload = {
+        ...formData,
+        order: isNaN(orderNumber) ? 0 : orderNumber,
+        isHod: Boolean(formData.isHod),
+        type: staffType
+      };
       if (imageUrl) payload.imageUrl = imageUrl;
 
       if (editingId) {
@@ -149,7 +201,7 @@ export default function Department() {
         addToast('Staff profile added successfully!', 'success');
       }
 
-      setFormData({ name: '', department: '', post: '', qualification: '', email: '' });
+      setFormData({ name: '', department: '', post: '', qualification: '', email: '', order: '', isHod: false });
       setFile(null);
       setEditingId(null);
       fetchItems(page);
@@ -159,6 +211,43 @@ export default function Department() {
       addToast('Failed to process request.', 'error');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleToggleHod = async (id, newHodStatus, doctorName) => {
+    try {
+      const res = await api.put(`/staff/${id}`, { isHod: newHodStatus });
+      if (res.data.success) {
+        addToast(
+          newHodStatus
+            ? `HOD enabled for ${doctorName || 'staff member'}!`
+            : `HOD disabled for ${doctorName || 'staff member'}.`,
+          'success'
+        );
+        fetchItems(page);
+      }
+    } catch (err) {
+      console.error("Failed to toggle HOD", err);
+      addToast('Failed to update HOD status.', 'error');
+    }
+  };
+
+  const handleQuickOrderUpdate = async (id, newOrderStr, currentOrder) => {
+    const trimmed = String(newOrderStr || '').trim();
+    const newOrder = trimmed === '' ? 0 : parseInt(trimmed, 10);
+    if (isNaN(newOrder)) return;
+    const currentOrderVal = currentOrder ? Number(currentOrder) : 0;
+    if (newOrder === currentOrderVal) return;
+
+    try {
+      const res = await api.put(`/staff/${id}`, { order: newOrder });
+      if (res.data.success) {
+        addToast(`Position set to #${newOrder > 0 ? newOrder : 'Default'}!`, 'success');
+        fetchItems(page);
+      }
+    } catch (err) {
+      console.error("Failed to update position", err);
+      addToast('Failed to update position.', 'error');
     }
   };
 
@@ -190,7 +279,9 @@ export default function Department() {
       department: item.department || '',
       post: item.post || '',
       qualification: item.qualification || '',
-      email: item.email || ''
+      email: item.email || '',
+      order: item.order ? String(item.order) : '',
+      isHod: Boolean(item.isHod)
     });
     setFile(null);
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -198,7 +289,7 @@ export default function Department() {
 
   const cancelEdit = () => {
     setEditingId(null);
-    setFormData({ name: '', department: '', post: '', qualification: '', email: '' });
+    setFormData({ name: '', department: '', post: '', qualification: '', email: '', order: '', isHod: false });
     setFile(null);
   };
 
@@ -269,6 +360,22 @@ export default function Department() {
             </div>
 
             <div className="space-y-1">
+              <label className="text-sm font-medium text-gray-700 flex items-center justify-between">
+                <span>Position / List Sequence</span>
+                <span className="text-xs text-muted-foreground font-normal">e.g. 1 for Top/HOD</span>
+              </label>
+              <input 
+                type="number" 
+                name="order"
+                min="1"
+                value={formData.order}
+                onChange={handleChange}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none"
+                placeholder="e.g. 1 (Top), 2 (2nd)..."
+              />
+            </div>
+
+            <div className="space-y-1">
               <label className="text-sm font-medium text-gray-700">Qualification (Optional)</label>
               <input 
                 type="text" 
@@ -280,7 +387,7 @@ export default function Department() {
               />
             </div>
 
-            <div className="space-y-1">
+            <div className="space-y-1 md:col-span-2">
               <label className="text-sm font-medium text-gray-700">Email ID (Optional)</label>
               <input 
                 type="email" 
@@ -290,6 +397,23 @@ export default function Department() {
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none"
                 placeholder="e.g. dr.rajesh@phulojhanomc.edu.in"
               />
+            </div>
+
+            <div className="flex items-center gap-2 md:col-span-2 pt-1">
+              <input
+                type="checkbox"
+                id="isHod"
+                name="isHod"
+                checked={Boolean(formData.isHod)}
+                onChange={(e) => setFormData({ ...formData, isHod: e.target.checked })}
+                className="w-4 h-4 text-primary rounded border-gray-300 focus:ring-primary cursor-pointer"
+              />
+              <label htmlFor="isHod" className="text-sm font-medium text-gray-700 cursor-pointer flex items-center gap-2">
+                <span>Mark as Head of Department (HOD)</span>
+                <span className="text-xs text-amber-700 font-semibold bg-amber-50 px-2 py-0.5 rounded border border-amber-200">
+                  Displays as &quot;Designation (HOD)&quot;
+                </span>
+              </label>
             </div>
           </div>
 
@@ -331,29 +455,126 @@ export default function Department() {
       </div>
 
       <div>
-        <h2 className="text-xl font-bold mb-4 text-gray-800 border-b pb-2">Teaching Staff Directory</h2>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4 border-b pb-2">
+          <h2 className="text-xl font-bold text-gray-800">Teaching Staff Directory</h2>
+          <span className="text-sm text-gray-500">
+            Total: <strong className="text-gray-800">{totalItems}</strong> members
+          </span>
+        </div>
+
+        {/* Filter Bar */}
+        <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 mb-6 space-y-3">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            {/* Search Input */}
+            <div className="relative">
+              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
+              <input
+                type="search"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search by name, email, qualification..."
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none text-sm"
+              />
+            </div>
+
+            {/* Department Filter */}
+            <div>
+              <select
+                value={filterDept}
+                onChange={(e) => setFilterDept(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none text-sm bg-white text-gray-800"
+              >
+                <option value="">All Departments ({deptList.length || DEPARTMENT_DATA.length})</option>
+                {(deptList.length ? deptList : DEPARTMENT_DATA.map(d => d.name)).map(dept => (
+                  <option key={dept} value={dept}>{dept.toUpperCase()}</option>
+                ))}
+              </select>
+            </div>
+
+            {/* Post Filter */}
+            <div>
+              <select
+                value={filterPost}
+                onChange={(e) => setFilterPost(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none text-sm bg-white text-gray-800"
+              >
+                <option value="">All Designations ({postList.length})</option>
+                {postList.map(post => (
+                  <option key={post} value={post}>{post}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          <div className="flex flex-wrap items-center justify-between text-xs text-gray-500 pt-2 border-t border-gray-100">
+            <span>
+              Showing {items.length} of <strong className="text-gray-800">{totalItems}</strong> matching staff member{totalItems === 1 ? '' : 's'}
+              {filterDept && <span> in <strong className="text-primary">{filterDept.toUpperCase()}</strong></span>}
+            </span>
+            {hasActiveFilters && (
+              <button
+                type="button"
+                onClick={resetFilters}
+                className="text-primary hover:underline font-medium cursor-pointer"
+              >
+                Clear all filters
+              </button>
+            )}
+          </div>
+        </div>
         
         {fetching ? (
           <div className="flex justify-center p-10"><Loader2 className="animate-spin text-primary w-8 h-8" /></div>
         ) : items.length === 0 ? (
-          <div className="text-center p-10 text-gray-500 bg-gray-50 rounded-lg border border-dashed border-gray-200">No staff members found.</div>
+          <div className="text-center p-10 text-gray-500 bg-gray-50 rounded-lg border border-dashed border-gray-200">
+            No staff members found matching the selected filters.
+            {hasActiveFilters && (
+              <div className="mt-2">
+                <button
+                  type="button"
+                  onClick={resetFilters}
+                  className="text-primary hover:underline font-medium text-xs cursor-pointer"
+                >
+                  Clear filters to show all
+                </button>
+              </div>
+            )}
+          </div>
         ) : (
           <div className="overflow-x-auto bg-white rounded-xl shadow-sm border border-gray-100">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="bg-gray-50 border-b border-gray-100">
-                  <th className="p-4 font-medium text-gray-600">Photo</th>
-                  <th className="p-4 font-medium text-gray-600">Name</th>
-                  <th className="p-4 font-medium text-gray-600">Department</th>
-                  <th className="p-4 font-medium text-gray-600">Designation</th>
-                  <th className="p-4 font-medium text-gray-600">Qualification</th>
-                  <th className="p-4 font-medium text-gray-600">Email</th>
-                  <th className="p-4 font-medium text-gray-600 text-right">Actions</th>
+                <tr className="bg-gray-50 border-b border-gray-100 text-xs uppercase tracking-wider text-gray-600">
+                  <th className="p-4 font-semibold text-center w-24" title="Sequence position in directory list">
+                    Pos #
+                  </th>
+                  <th className="p-4 font-semibold">Photo</th>
+                  <th className="p-4 font-semibold">Name</th>
+                  <th className="p-4 font-semibold">Department</th>
+                  <th className="p-4 font-semibold">Designation</th>
+                  <th className="p-4 font-semibold">Qualification</th>
+                  <th className="p-4 font-semibold">Email</th>
+                  <th className="p-4 font-semibold text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-100">
+              <tbody className="divide-y divide-gray-100 text-sm">
                 {items.map(item => (
                   <tr key={item._id} className="hover:bg-gray-50/50 transition-colors">
+                    <td className="p-4 text-center">
+                      <input
+                        type="number"
+                        min="1"
+                        key={item._id + '-' + (item.order || 0)}
+                        defaultValue={item.order > 0 ? item.order : ''}
+                        onBlur={(e) => handleQuickOrderUpdate(item._id, e.target.value, item.order)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') e.target.blur();
+                        }}
+                        className="w-16 px-2 py-1 text-center border border-gray-300 rounded-md focus:ring-2 focus:ring-primary focus:border-transparent outline-none text-sm font-semibold bg-white"
+                        placeholder="-"
+                        title="Enter position number (1 for top). Press Enter to save."
+                      />
+                    </td>
                     <td className="p-4">
                       {item.imageUrl ? (
                         <img src={item.imageUrl} alt={item.name} className="w-12 h-12 rounded-full object-cover border border-gray-200" />
@@ -364,14 +585,37 @@ export default function Department() {
                       )}
                     </td>
                     <td className="p-4 font-medium text-gray-800">{item.name}</td>
-                    <td className="p-4 text-gray-700 font-medium">{item.department}</td>
-                    <td className="p-4 text-primary">{item.post}</td>
+                    <td className="p-4 text-gray-700 font-medium uppercase text-xs">
+                      <span className="bg-gray-100 px-2.5 py-1 rounded-full">
+                        {item.department}
+                      </span>
+                    </td>
+                    <td className="p-4 text-primary font-medium">
+                      <span>{item.post}</span>
+                      {item.isHod && (
+                        <span className="ml-1.5 inline-block font-bold text-amber-700 bg-amber-50 border border-amber-300 px-1.5 py-0.5 rounded text-xs">
+                          (HOD)
+                        </span>
+                      )}
+                    </td>
                     <td className="p-4 text-gray-600 text-sm">{item.qualification || '-'}</td>
                     <td className="p-4 text-gray-600 text-sm">{item.email || '-'}</td>
                     <td className="p-4">
-                      <div className="flex justify-end gap-2">
-                        <button onClick={() => handleEdit(item)} className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" title="Edit"><Edit2 size={18} /></button>
-                        <button onClick={() => handleDelete(item._id)} className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="Delete">{deletingId === item._id ? <Loader2 className="animate-spin" size={18} /> : <Trash2 size={18} />}</button>
+                      <div className="flex items-center justify-end gap-1.5">
+                        <button
+                          type="button"
+                          onClick={() => handleToggleHod(item._id, !item.isHod, item.name)}
+                          className={`p-1.5 rounded-lg transition-all border cursor-pointer ${
+                            item.isHod
+                              ? 'bg-amber-100 text-amber-700 border-amber-300 hover:bg-amber-200 shadow-xs'
+                              : 'bg-gray-50 text-gray-400 border-gray-200 hover:text-amber-600 hover:bg-amber-50 hover:border-amber-200'
+                          }`}
+                          title={item.isHod ? 'HOD Active (Click to disable HOD)' : 'Click to Enable HOD'}
+                        >
+                          <Crown size={16} className={item.isHod ? 'fill-amber-500 text-amber-600' : ''} />
+                        </button>
+                        <button onClick={() => handleEdit(item)} className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors cursor-pointer border border-transparent hover:border-blue-200" title="Edit"><Edit2 size={16} /></button>
+                        <button onClick={() => handleDelete(item._id)} className="p-1.5 text-red-600 hover:bg-red-50 rounded-lg transition-colors cursor-pointer border border-transparent hover:border-red-200" title="Delete">{deletingId === item._id ? <Loader2 className="animate-spin" size={16} /> : <Trash2 size={16} />}</button>
                       </div>
                     </td>
                   </tr>

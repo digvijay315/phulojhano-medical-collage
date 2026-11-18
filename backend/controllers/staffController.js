@@ -3,8 +3,19 @@ const cloudinary = require('cloudinary').v2;
 
 const createStaff = async (req, res) => {
   try {
-    const { name, post, department, qualification, email, imageUrl, type } = req.body;
-    const newStaff = new Staff({ name, post, department, qualification, email, imageUrl, type });
+    const { name, post, department, qualification, email, imageUrl, type, order, position, isHod } = req.body;
+    const orderVal = order !== undefined ? Number(order) : (position !== undefined ? Number(position) : 0);
+    const newStaff = new Staff({
+      name,
+      post,
+      department,
+      qualification,
+      email,
+      imageUrl,
+      type,
+      order: isNaN(orderVal) ? 0 : orderVal,
+      isHod: Boolean(isHod)
+    });
     await newStaff.save();
     res.status(201).json({ success: true, item: newStaff });
   } catch (error) {
@@ -46,10 +57,28 @@ const getStaff = async (req, res) => {
     const baseFilter = type ? { type } : {};
     const [total, items, allDepartments, allPosts] = await Promise.all([
       Staff.countDocuments(query),
-      Staff.find(query)
-        .sort({ createdAt: 1 })
-        .skip((page - 1) * limit)
-        .limit(limit),
+      Staff.aggregate([
+        { $match: query },
+        {
+          $addFields: {
+            sortOrder: {
+              $cond: {
+                if: {
+                  $and: [
+                    { $ne: ["$order", null] },
+                    { $gt: ["$order", 0] }
+                  ]
+                },
+                then: "$order",
+                else: 999999
+              }
+            }
+          }
+        },
+        { $sort: { sortOrder: 1, createdAt: 1, _id: 1 } },
+        { $skip: (page - 1) * limit },
+        { $limit: limit }
+      ]),
       Staff.distinct('department', baseFilter),
       Staff.distinct('post', baseFilter)
     ]);
@@ -71,10 +100,24 @@ const getStaff = async (req, res) => {
 const updateStaff = async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, post, department, qualification, email, imageUrl } = req.body;
+    const { name, post, department, qualification, email, imageUrl, order, position, isHod } = req.body;
     
-    const updateData = { name, post, department, qualification, email };
-    if (imageUrl) updateData.imageUrl = imageUrl;
+    const updateData = {};
+    if (name !== undefined) updateData.name = name;
+    if (post !== undefined) updateData.post = post;
+    if (department !== undefined) updateData.department = department;
+    if (qualification !== undefined) updateData.qualification = qualification;
+    if (email !== undefined) updateData.email = email;
+    if (imageUrl !== undefined) updateData.imageUrl = imageUrl;
+
+    if (order !== undefined || position !== undefined) {
+      const val = order !== undefined ? Number(order) : Number(position);
+      updateData.order = isNaN(val) ? 0 : val;
+    }
+
+    if (isHod !== undefined) {
+      updateData.isHod = Boolean(isHod);
+    }
 
     const updated = await Staff.findByIdAndUpdate(id, updateData, { new: true });
     res.status(200).json({ success: true, item: updated });

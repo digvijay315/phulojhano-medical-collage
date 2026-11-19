@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useQuery } from "@tanstack/react-query";
@@ -26,24 +26,36 @@ function Hero() {
   useEffect(() => {
     const id = setInterval(
       () => setIndex((i) => (i + 1) % heroSlides.length),
-      5000,
+      6000,
     );
     return () => clearInterval(id);
   }, []);
 
   return (
-    <div className="relative w-full h-[60vh] sm:h-[75vh] lg:h-[85vh] overflow-hidden bg-black">
+    <div className="relative w-full h-[50vh] sm:h-[65vh] lg:h-[75vh] overflow-hidden bg-black">
       {heroSlides.map((src, i) => (
-        <img
+        <motion.img
           key={src}
           src={src}
           alt="Campus of Phulo Jhano Medical College, Dumka"
           loading={i === 0 ? "eager" : "lazy"}
-          className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-1000 ${
-            i === index ? "opacity-100" : "opacity-0"
-          }`}
+          initial={{ opacity: 0, scale: 1 }}
+          animate={
+            i === index
+              ? { opacity: 1, scale: 1.05 }
+              : { opacity: 0, scale: 1 }
+          }
+          transition={{
+            opacity: { duration: 1.2, ease: "easeInOut" },
+            scale: { duration: 6.5, ease: "easeOut" }
+          }}
+          className="absolute inset-0 h-full w-full object-cover pointer-events-none will-change-transform"
         />
       ))}
+
+      {/* Subtle depth gradient overlay */}
+      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20 pointer-events-none" />
+
       <div className="absolute bottom-6 left-0 right-0 flex justify-center gap-2 z-10">
         {heroSlides.map((s, i) => (
           <button
@@ -51,8 +63,8 @@ function Hero() {
             type="button"
             aria-label={`Show slide ${i + 1}`}
             onClick={() => setIndex(i)}
-            className={`h-1.5 rounded-full transition-all ${
-              i === index ? "w-8 bg-white" : "w-3 bg-white/50"
+            className={`h-1.5 rounded-full transition-all cursor-pointer ${
+              i === index ? "w-8 bg-white shadow-md" : "w-3 bg-white/50 hover:bg-white/80"
             }`}
           />
         ))}
@@ -64,6 +76,28 @@ function Hero() {
 export default function Home() {
   const [latestNotices, setLatestNotices] = useState([]);
   const [selectedNotice, setSelectedNotice] = useState(null);
+  const announcementsRef = useRef(null);
+  const [canScrollDown, setCanScrollDown] = useState(true);
+
+  const checkScroll = () => {
+    const el = announcementsRef.current;
+    if (el) {
+      const hasMore = el.scrollHeight > el.clientHeight && el.scrollTop + el.clientHeight < el.scrollHeight - 12;
+      setCanScrollDown(hasMore);
+    }
+  };
+
+  const scrollDownAnnouncements = () => {
+    const el = announcementsRef.current;
+    if (el) {
+      if (!canScrollDown) {
+        // Scroll back to top if already at bottom
+        el.scrollTo({ top: 0, behavior: 'smooth' });
+      } else {
+        el.scrollBy({ top: 130, behavior: 'smooth' });
+      }
+    }
+  };
   const { data: photos = [], isLoading: isLoadingPhotos } = useQuery({
     queryKey: ['gallery', 'home'],
     queryFn: async () => {
@@ -241,42 +275,77 @@ export default function Home() {
             transition={{ duration: 0.6 }}
             className="rounded-2xl border border-border bg-secondary p-6"
           >
-            <h2 className="font-serif text-xl font-semibold">Latest Announcements</h2>
+            <div className="flex items-center justify-between">
+              <h2 className="font-serif text-xl font-semibold">Latest Announcements</h2>
+              <span className="text-[11px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full bg-accent/10 text-accent">
+                Updates
+              </span>
+            </div>
             
             {latestNotices.length > 0 ? (
-              <div className="mt-4 max-h-[300px] overflow-y-auto pr-2">
-                <ul className="space-y-3">
-                  {latestNotices.map((notice) => (
-                    <li key={notice._id} className="border-b border-border pb-3">
-                      <p className="text-sm font-medium flex items-start gap-2">
-                        {notice.pdfUrl ? (
-                          <a href={notice.pdfUrl} target="_blank" rel="noreferrer" className="hover:text-accent transition-colors line-clamp-2 flex-1">
-                            {notice.title}
-                          </a>
-                        ) : notice.description ? (
-                          <button onClick={() => setSelectedNotice(notice)} className="text-left hover:text-accent transition-colors line-clamp-2 flex-1">
-                            {notice.title}
-                          </button>
-                        ) : (
-                          <span className="line-clamp-2 flex-1">{notice.title}</span>
-                        )}
-                        {notice.isNewFlash && (
-                          <span className="px-2 py-0.5 bg-red-100 text-red-600 text-[10px] font-bold rounded-full animate-pulse shrink-0">NEW</span>
-                        )}
-                      </p>
-                      <p className="text-xs text-muted-foreground flex justify-between mt-1">
-                        <span>{notice.category}</span>
-                        <span>{new Date(notice.date).toLocaleDateString()}</span>
-                      </p>
-                    </li>
-                  ))}
-                </ul>
+              <div className="relative mt-4">
+                {/* Scrollable Container with Hidden Scrollbar */}
+                <div 
+                  ref={announcementsRef}
+                  onScroll={checkScroll}
+                  className="max-h-[300px] overflow-y-auto scroll-smooth pr-1 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+                >
+                  <ul className="space-y-3 pb-2">
+                    {latestNotices.map((notice) => (
+                      <li key={notice._id} className="border-b border-border/80 pb-3 transition-colors hover:bg-black/5 rounded-lg p-1.5 -mx-1.5">
+                        <p className="text-sm font-medium flex items-start gap-2">
+                          {notice.pdfUrl ? (
+                            <a href={notice.pdfUrl} target="_blank" rel="noreferrer" className="hover:text-accent transition-colors line-clamp-2 flex-1">
+                              {notice.title}
+                            </a>
+                          ) : notice.description ? (
+                            <button onClick={() => setSelectedNotice(notice)} className="text-left hover:text-accent transition-colors line-clamp-2 flex-1">
+                              {notice.title}
+                            </button>
+                          ) : (
+                            <span className="line-clamp-2 flex-1">{notice.title}</span>
+                          )}
+                          {notice.isNewFlash && (
+                            <span className="px-2 py-0.5 bg-red-100 text-red-600 text-[10px] font-bold rounded-full animate-pulse shrink-0">NEW</span>
+                          )}
+                        </p>
+                        <p className="text-xs text-muted-foreground flex justify-between mt-1">
+                          <span className="font-medium text-accent/90">{notice.category}</span>
+                          <span>{new Date(notice.date).toLocaleDateString()}</span>
+                        </p>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+
+                {/* Attractive Bottom Scroll Action / Arrow */}
+                <div className="pt-2">
+                  <button
+                    type="button"
+                    onClick={scrollDownAnnouncements}
+                    className="w-full flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl bg-card border border-border/80 shadow-xs hover:border-accent hover:text-accent text-xs font-semibold text-foreground/80 transition-all cursor-pointer group"
+                    title={canScrollDown ? "Scroll down for more notices" : "Scroll back to top"}
+                  >
+                    <span>{canScrollDown ? "More Announcements" : "Back to Top"}</span>
+                    <span className="w-5 h-5 rounded-full bg-accent/10 flex items-center justify-center group-hover:bg-accent/20 transition-colors">
+                      {canScrollDown ? (
+                        <svg className="w-3.5 h-3.5 text-accent animate-bounce" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" />
+                        </svg>
+                      ) : (
+                        <svg className="w-3.5 h-3.5 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 15l7-7 7 7" />
+                        </svg>
+                      )}
+                    </span>
+                  </button>
+                </div>
               </div>
             ) : (
               <p className="mt-4 text-sm text-muted-foreground">No recent notices.</p>
             )}
             
-            <div className="mt-5 flex gap-3 text-sm font-semibold">
+            <div className="mt-4 flex gap-3 text-sm font-semibold pt-2 border-t border-border/60">
               <Link to="/tender" className="text-accent-foreground underline">
                 Tenders
               </Link>

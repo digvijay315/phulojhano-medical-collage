@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import api from '../api';
-import { Upload, Loader2, Trash2, Edit2, Image as ImageIcon, Search, Crown } from 'lucide-react';
+import { Upload, Loader2, Trash2, Edit2, Image as ImageIcon, Search, Crown, X, Mail, GraduationCap, Building2, Hash } from 'lucide-react';
 import { useToast } from '../context/ToastContext';
 import { useConfirm } from '../context/ConfirmContext';
 
@@ -47,6 +47,7 @@ const getAvailablePosts = (dept) => {
 
 export default function Department() {
   const [deletingId, setDeletingId] = useState(null);
+  const [viewingStaff, setViewingStaff] = useState(null);
   const [formData, setFormData] = useState({
     name: '',
     department: '',
@@ -559,8 +560,13 @@ export default function Department() {
               </thead>
               <tbody className="divide-y divide-gray-100 text-sm">
                 {items.map(item => (
-                  <tr key={item._id} className="hover:bg-gray-50/50 transition-colors">
-                    <td className="p-4 text-center">
+                  <tr 
+                    key={item._id} 
+                    onClick={() => setViewingStaff(item)}
+                    className="hover:bg-primary/5 transition-colors cursor-pointer group"
+                    title="Click row to view full doctor profile"
+                  >
+                    <td className="p-4 text-center" onClick={(e) => e.stopPropagation()}>
                       <input
                         type="number"
                         min="1"
@@ -577,14 +583,14 @@ export default function Department() {
                     </td>
                     <td className="p-4">
                       {item.imageUrl ? (
-                        <img src={item.imageUrl} alt={item.name} className="w-12 h-12 rounded-full object-cover border border-gray-200" />
+                        <img src={item.imageUrl} alt={item.name} className="w-12 h-12 rounded-full object-cover border border-gray-200 group-hover:ring-2 group-hover:ring-primary/20 transition-all" />
                       ) : (
                         <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center border border-primary/20 text-primary font-bold text-lg">
                           {item.name ? item.name.charAt(0).toUpperCase() : '?'}
                         </div>
                       )}
                     </td>
-                    <td className="p-4 font-medium text-gray-800">{item.name}</td>
+                    <td className="p-4 font-medium text-gray-800 group-hover:text-primary transition-colors">{item.name}</td>
                     <td className="p-4 text-gray-700 font-medium uppercase text-xs">
                       <span className="bg-gray-100 px-2.5 py-1 rounded-full">
                         {item.department}
@@ -600,7 +606,7 @@ export default function Department() {
                     </td>
                     <td className="p-4 text-gray-600 text-sm">{item.qualification || '-'}</td>
                     <td className="p-4 text-gray-600 text-sm">{item.email || '-'}</td>
-                    <td className="p-4">
+                    <td className="p-4" onClick={(e) => e.stopPropagation()}>
                       <div className="flex items-center justify-end gap-1.5">
                         <button
                           type="button"
@@ -664,6 +670,191 @@ export default function Department() {
           </div>
         )}
       </div>
+
+      {/* Premium Profile View Modal (Balanced & Compact) */}
+      {viewingStaff && (
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200 overflow-y-auto"
+          onClick={() => setViewingStaff(null)}
+        >
+          <div 
+            className="bg-white rounded-2xl sm:rounded-3xl shadow-2xl max-w-md sm:max-w-lg w-full overflow-hidden border border-gray-100 relative my-6 animate-in zoom-in-95 duration-200"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Top Close Button */}
+            <button
+              type="button"
+              onClick={() => setViewingStaff(null)}
+              className="absolute top-3.5 right-3.5 z-20 w-8 h-8 rounded-full bg-white/90 hover:bg-white text-gray-600 hover:text-gray-900 flex items-center justify-center shadow transition-all cursor-pointer border border-gray-200"
+              title="Close Profile"
+            >
+              <X size={18} />
+            </button>
+
+            {/* Decorative Top Banner */}
+            <div className="h-28 sm:h-32 bg-gradient-to-r from-primary via-teal-800 to-primary/95 relative overflow-hidden flex items-start justify-between p-4 sm:p-5">
+              <div className="absolute -right-8 -top-8 w-36 h-36 bg-white/10 rounded-full blur-2xl pointer-events-none" />
+              <div className="text-white/90 text-xs font-semibold uppercase tracking-wider flex items-center gap-1.5">
+                <Building2 size={14} />
+                <span>{viewingStaff.department?.toUpperCase()}</span>
+              </div>
+              {viewingStaff.isHod && (
+                <div className="bg-amber-400 text-amber-950 font-bold text-xs px-2.5 py-1 rounded-full shadow flex items-center gap-1 mr-8">
+                  <Crown size={13} className="fill-amber-950" />
+                  <span>Head of Department</span>
+                </div>
+              )}
+            </div>
+
+            {/* Profile Content */}
+            <div className="px-5 sm:px-6 pb-6 pt-0 relative">
+              {/* Centered Large Profile Picture */}
+              <div className="-mt-14 sm:-mt-16 flex justify-center">
+                <div className="relative">
+                  {viewingStaff.imageUrl ? (
+                    <img 
+                      src={viewingStaff.imageUrl} 
+                      alt={viewingStaff.name} 
+                      className="w-28 h-28 sm:w-32 sm:h-32 rounded-full object-cover border-4 border-white shadow-xl bg-white"
+                    />
+                  ) : (
+                    <div className="w-28 h-28 sm:w-32 sm:h-32 rounded-full bg-primary/10 border-4 border-white shadow-xl flex items-center justify-center text-primary font-bold text-3xl sm:text-4xl bg-white">
+                      {viewingStaff.name ? viewingStaff.name.replace(/^Dr\.\s*/i, '').charAt(0).toUpperCase() : '?'}
+                    </div>
+                  )}
+                  {viewingStaff.isHod && (
+                    <div 
+                      className="absolute bottom-1 right-1 bg-amber-500 text-white p-1.5 rounded-full shadow-lg border-2 border-white"
+                      title="Head of Department"
+                    >
+                      <Crown size={15} className="fill-white" />
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Doctor Name & Designation */}
+              <div className="text-center mt-3 space-y-1">
+                <h3 className="text-xl sm:text-2xl font-bold font-serif text-gray-900 leading-snug">
+                  {viewingStaff.name}
+                </h3>
+                <p className="text-primary font-semibold text-sm sm:text-base flex items-center justify-center gap-1.5">
+                  <span>{viewingStaff.post}</span>
+                  {viewingStaff.isHod && (
+                    <span className="font-bold text-amber-700 bg-amber-50 border border-amber-300 px-1.5 py-0.5 rounded text-[11px]">
+                      (HOD)
+                    </span>
+                  )}
+                </p>
+
+                {/* Badges */}
+                <div className="flex flex-wrap items-center justify-center gap-1.5 pt-1.5">
+                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-gray-100 text-gray-800 uppercase tracking-wide">
+                    {viewingStaff.department}
+                  </span>
+                  {viewingStaff.order > 0 ? (
+                    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-primary/10 text-primary border border-primary/20">
+                      <Hash size={11} />
+                      Position #{viewingStaff.order}
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-gray-50 text-gray-500 border border-gray-200">
+                      Default Position
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              {/* Information Cards Grid (2 columns on tablet/desktop) */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 mt-5">
+                {/* Qualification Card */}
+                <div className="flex items-start gap-2.5 p-2.5 sm:p-3 rounded-xl bg-gray-50 border border-gray-100 text-left">
+                  <div className="w-9 h-9 rounded-lg bg-teal-50 text-primary flex items-center justify-center shrink-0 border border-teal-100 mt-0.5">
+                    <GraduationCap size={18} />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="text-[11px] text-gray-500 font-medium">Qualification</div>
+                    <div className="text-xs sm:text-sm font-semibold text-gray-800 mt-0.5 break-words">
+                      {viewingStaff.qualification || 'Not Specified'}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Email Address Card */}
+                <div className="flex items-start gap-2.5 p-2.5 sm:p-3 rounded-xl bg-gray-50 border border-gray-100 text-left">
+                  <div className="w-9 h-9 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center shrink-0 border border-blue-100 mt-0.5">
+                    <Mail size={18} />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="text-[11px] text-gray-500 font-medium">Email Address</div>
+                    <div className="text-xs sm:text-sm font-semibold text-gray-800 mt-0.5 truncate">
+                      {viewingStaff.email ? (
+                        <a 
+                          href={`mailto:${viewingStaff.email}`} 
+                          className="text-primary hover:underline"
+                        >
+                          {viewingStaff.email}
+                        </a>
+                      ) : (
+                        <span className="text-gray-400 font-normal">Not Provided</span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Department Info Card */}
+                <div className="flex items-start gap-2.5 p-2.5 sm:p-3 rounded-xl bg-gray-50 border border-gray-100 text-left">
+                  <div className="w-9 h-9 rounded-lg bg-purple-50 text-purple-600 flex items-center justify-center shrink-0 border border-purple-100 mt-0.5">
+                    <Building2 size={18} />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="text-[11px] text-gray-500 font-medium">Department</div>
+                    <div className="text-xs sm:text-sm font-semibold text-gray-800 mt-0.5 uppercase tracking-wide">
+                      {viewingStaff.department}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Directory Position Card */}
+                <div className="flex items-start gap-2.5 p-2.5 sm:p-3 rounded-xl bg-gray-50 border border-gray-100 text-left">
+                  <div className="w-9 h-9 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center shrink-0 border border-amber-100 mt-0.5">
+                    <Hash size={18} />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="text-[11px] text-gray-500 font-medium">Directory Position</div>
+                    <div className="text-xs sm:text-sm font-semibold text-gray-800 mt-0.5">
+                      {viewingStaff.order > 0 ? `#${viewingStaff.order} in directory` : 'Default Sequence'}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Modal Action Buttons */}
+              <div className="flex gap-2.5 mt-5 pt-3 border-t border-gray-100">
+                <button
+                  type="button"
+                  onClick={() => {
+                    const toEdit = viewingStaff;
+                    setViewingStaff(null);
+                    handleEdit(toEdit);
+                  }}
+                  className="flex-1 flex items-center justify-center gap-1.5 py-2.5 px-4 rounded-xl bg-primary text-primary-foreground font-semibold text-sm hover:bg-primary/90 transition-colors shadow-sm cursor-pointer"
+                >
+                  <Edit2 size={15} />
+                  <span>Edit Profile</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setViewingStaff(null)}
+                  className="px-5 py-2.5 rounded-xl border border-gray-200 text-gray-700 font-semibold text-sm hover:bg-gray-50 transition-colors cursor-pointer"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
